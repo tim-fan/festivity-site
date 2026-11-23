@@ -3,44 +3,71 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Vote for your neighborhood – Christmas Light Map 2026</title>
 <meta name="description" content="Donate to Rady Children's Hospital and vote for which San Diego neighborhood gets its Christmas lights mapped.">
+<meta property="og:title" content="Which San Diego neighborhood has the best Christmas lights?">
+<meta property="og:description" content="Donate to Rady Children's Hospital to vote. The winning neighborhood gets every street's lights mapped.">
 <style>
- body{margin:0;background:#14141e;color:#f2f2f2;font:17px/1.5 system-ui,sans-serif}
- main{max-width:620px;margin:0 auto;padding:28px 18px 60px}
- h1{font-size:1.6em;line-height:1.2;margin:.2em 0 .4em}
- .lead{color:#c9c9d6}
- ol{padding:0;list-style:none;counter-reset:s}
- ol>li{counter-increment:s;background:#1e1e2c;border-radius:12px;padding:16px 16px 16px 60px;margin:14px 0;position:relative}
- ol>li::before{content:counter(s);position:absolute;left:16px;top:14px;width:32px;height:32px;border-radius:50%;background:#2e7d32;color:#fff;
+ :root{--bg:#fbf6ee;--card:#fff;--ink:#2b2b2b;--soft:#6b6460;--red:#c8362f;--green:#2f7d4f;--blue:#2f6db3;--line:#efe6da}
+ *{box-sizing:border-box}
+ body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+ .lights{display:flex;justify-content:space-between;padding:0 6px;height:34px;overflow:hidden;
+   background:linear-gradient(transparent 9px,#3d5a40 9px,#3d5a40 11px,transparent 11px)}
+ .lights span{width:11px;height:17px;margin-top:10px;border-radius:50% 50% 50% 50%/60% 60% 40% 40%;background:var(--c);
+   box-shadow:0 0 10px var(--c);animation:glow 2.4s ease-in-out var(--d) infinite alternate}
+ @keyframes glow{from{opacity:.55}to{opacity:1}}
+ @media (prefers-reduced-motion:reduce){.lights span{animation:none}}
+ main{max-width:600px;margin:0 auto;padding:18px 18px 56px}
+ .kicker{color:var(--green);font-weight:600;font-size:.9em;letter-spacing:.02em;margin:6px 0 0}
+ h1{font-size:2em;line-height:1.15;margin:.2em 0 .35em;letter-spacing:-.01em}
+ .lead{font-size:1.06em;color:#4a4440;margin:0 0 6px}
+ .rady{display:inline-block;background:#fdeceb;color:var(--red);border-radius:999px;padding:3px 12px;font-weight:600;font-size:.88em;margin:6px 0 4px}
+ #zone-box{display:none;background:#fff8e1;border:2px dashed #f2c94c;border-radius:14px;padding:12px 16px;margin:16px 0 4px;font-size:1.05em}
+ #zone-box b{color:#9a6b00}
+ ol{padding:0;list-style:none;counter-reset:s;margin:18px 0}
+ ol>li{counter-increment:s;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px 18px 18px 66px;margin:12px 0;position:relative;
+   box-shadow:0 2px 10px rgba(80,50,20,.06)}
+ ol>li::before{content:counter(s);position:absolute;left:18px;top:17px;width:34px;height:34px;border-radius:50%;background:var(--green);color:#fff;
    font-weight:700;display:flex;align-items:center;justify-content:center}
- h2{font-size:1.1em;margin:0 0 .3em}
- p{margin:.3em 0}
- .btn{display:inline-block;margin-top:8px;padding:10px 16px;border-radius:8px;background:#2e7d32;color:#fff;text-decoration:none;font-weight:600}
- .btn.blue{background:#1565c0}.btn.red{background:#c62828}
- .btn.disabled{background:#555;pointer-events:none}
- #zone-box{display:none;background:#33301a;border:1px solid #ffd54f;border-radius:10px;padding:10px 14px;margin:12px 0}
- #zone-box b{color:#ffd54f}
- small,.fine{color:#9a9aab;font-size:.85em}
- a{color:#9cc8ff}
+ ol>li:nth-child(2)::before{background:var(--red)}
+ h2{font-size:1.12em;margin:0 0 .2em}
+ p{margin:.25em 0}
+ .btn{display:inline-block;margin-top:10px;padding:12px 18px;border-radius:12px;background:var(--green);color:#fff;text-decoration:none;font-weight:600;
+   box-shadow:0 2px 0 rgba(0,0,0,.12)}
+ .btn:hover{filter:brightness(1.07)} .btn.blue{background:var(--blue)} .btn.red{background:var(--red)}
+ .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px 18px;margin:14px 0;box-shadow:0 2px 10px rgba(80,50,20,.05)}
+ .card h2{display:flex;gap:8px;align-items:center}
+ .fine{color:var(--soft);font-size:.9em}
+ a{color:var(--blue)}
+ footer{text-align:center;color:var(--soft);font-size:.88em;margin-top:26px}
 </style></head>
-<body><main>
-<p class="fine">&#127876; Christmas Light Map 2026</p>
-<h1>Vote for your neighborhood</h1>
-<p class="lead">Every donation goes to <b>Rady Children&rsquo;s Hospital</b> and counts as a vote for your neighborhood. The zone with the most donations wins, and I&rsquo;ll drive every street in it and map its Christmas lights.</p>
-<div id="zone-box">You&rsquo;re voting for <b id="zone-label"></b>.</div>
+<body>
+<div class="lights" aria-hidden="true"><span style="--c:#e53935;--d:0.00s"></span><span style="--c:#fdd835;--d:0.37s"></span><span style="--c:#43a047;--d:0.74s"></span><span style="--c:#1e88e5;--d:1.11s"></span><span style="--c:#fb8c00;--d:1.48s"></span><span style="--c:#e53935;--d:1.85s"></span><span style="--c:#fdd835;--d:0.22s"></span><span style="--c:#43a047;--d:0.59s"></span><span style="--c:#1e88e5;--d:0.96s"></span><span style="--c:#fb8c00;--d:1.33s"></span><span style="--c:#e53935;--d:1.70s"></span><span style="--c:#fdd835;--d:0.07s"></span><span style="--c:#43a047;--d:0.44s"></span><span style="--c:#1e88e5;--d:0.81s"></span><span style="--c:#fb8c00;--d:1.18s"></span><span style="--c:#e53935;--d:1.55s"></span><span style="--c:#fdd835;--d:1.92s"></span><span style="--c:#43a047;--d:0.29s"></span><span style="--c:#1e88e5;--d:0.66s"></span><span style="--c:#fb8c00;--d:1.03s"></span><span style="--c:#e53935;--d:1.40s"></span><span style="--c:#fdd835;--d:1.77s"></span><span style="--c:#43a047;--d:0.14s"></span><span style="--c:#1e88e5;--d:0.51s"></span><span style="--c:#fb8c00;--d:0.88s"></span></div>
+<main>
+<p class="kicker">&#127876; San Diego Christmas Light Map 2026</p>
+<h1>Help your neighborhood shine</h1>
+<p class="lead">Which neighborhood has the best Christmas lights? Vote by donating. The zone that raises the most gets every street driven and its lights put on a map for everyone to enjoy.</p>
+<span class="rady">&#10084;&#65039; Donations go to Rady Children&rsquo;s Hospital</span>
+<div id="zone-box">&#127775; You&rsquo;re voting for <b id="zone-label"></b>. Great choice!</div>
 <ol>
- <li><h2>Find your zone number</h2>
+ <li><h2>Find your zone</h2>
   <p>Search your address on the map to get your zone number.</p>
   <a class="btn blue" href="/2026/zones/">Open the zone map</a></li>
- <li><h2>Donate to Rady Children&rsquo;s</h2>
-  <p>Any amount counts. No account needed.</p>
+ <li><h2>Donate any amount</h2>
+  <p>Every dollar is a vote, and every dollar helps kids at Rady Children&rsquo;s. No account needed.</p>
   <a class="btn red" id="donate" href="https://gofund.me/ba119d164" target="_blank" rel="noopener">Donate on GoFundMe</a></li>
- <li><h2>Register your vote</h2>
-  <p>GoFundMe can&rsquo;t record which zone you&rsquo;re voting for, so tell us here. Use the name you donated under and we&rsquo;ll match it to your donation. Takes 30 seconds, and no sign-in is needed.</p>
-  <a class="btn" id="vote" href="https://docs.google.com/forms/d/e/1FAIpQLSf8WkAVcSQsFZQ002nFmgO8-Ksep6SAGbmK_ohJSQ_hKLJr7Q/viewform" target="_blank" rel="noopener">Register my zone vote</a></li>
+ <li><h2>Tell us your zone</h2>
+  <p>GoFundMe can&rsquo;t record neighborhoods, so this 30-second form links your donation to your zone. No sign-in needed.</p>
+  <a class="btn" id="vote" href="https://docs.google.com/forms/d/e/1FAIpQLSf8WkAVcSQsFZQ002nFmgO8-Ksep6SAGbmK_ohJSQ_hKLJr7Q/viewform" target="_blank" rel="noopener">Register my vote</a></li>
 </ol>
-<p class="fine">Donated anonymously? Your name is hidden from the public, but the organizer can still see it, so your vote still counts. Votes without a matching donation aren&rsquo;t counted.</p>
-<p class="fine">Don&rsquo;t want your house on the map? <a href="https://www.facebook.com/people/Merry-Mapping/61597029742696/" target="_blank" rel="noopener">Message us on Facebook</a> and we&rsquo;ll remove it.</p>
-<p class="fine">Questions, or want updates? Follow <a href="https://www.facebook.com/people/Merry-Mapping/61597029742696/" target="_blank" rel="noopener">Merry Mapping on Facebook</a>.</p>
+<div class="card">
+ <h2>&#128154; Where does the money go?</h2>
+ <p>This is a GoFundMe <b>charity fundraiser</b>: donations go straight to Rady Children&rsquo;s Hospital Foundation, not to me. You&rsquo;ll get a receipt by email. I do the mapping for free as a local volunteer, and you can see <a href="https://tim-fan.github.io/festivity/mira_mesa/" target="_blank" rel="noopener">last year&rsquo;s Mira Mesa map</a>.</p>
+</div>
+<div class="card">
+ <h2>&#128172; Good to know</h2>
+ <p class="fine">Donated anonymously? Your name is hidden from the public, but the organizer can still see it, so your vote still counts. Votes without a matching donation aren&rsquo;t counted.</p>
+ <p class="fine">Don&rsquo;t want your house on the map? <a href="https://www.facebook.com/people/Merry-Mapping/61597029742696/" target="_blank" rel="noopener">Message us on Facebook</a> and we&rsquo;ll remove it.</p>
+</div>
+<footer>Questions or updates: follow <a href="https://www.facebook.com/people/Merry-Mapping/61597029742696/" target="_blank" rel="noopener">Merry Mapping on Facebook</a> &#127873;</footer>
 </main>
 <script>
 (function(){
