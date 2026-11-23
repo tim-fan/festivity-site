@@ -1,6 +1,6 @@
 # festivity-site
 
-Static site for the Christmas light map, served at https://festivity.tim-fan.xyz (Cloudflare Pages, no build step).
+Static site for the Christmas light map, served at https://festivity.tim-fan.xyz (Cloudflare Workers static assets via `wrangler.jsonc`, no build step).
 
 - `/2026/zones/`: neighborhood zone picker for the 2026 vote
 - `/2026/` and `/`: redirect to the zone picker for now (overview page to come)
