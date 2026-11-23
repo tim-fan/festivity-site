@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Vote for your neighborhood – Christmas Light Map 2026</title>
+<meta name="description" content="Donate to Rady Children's Hospital and vote for which San Diego neighborhood gets its Christmas lights mapped.">
+<style>
+ body{margin:0;background:#14141e;color:#f2f2f2;font:17px/1.5 system-ui,sans-serif}
+ main{max-width:620px;margin:0 auto;padding:28px 18px 60px}
+ h1{font-size:1.6em;line-height:1.2;margin:.2em 0 .4em}
+ .lead{color:#c9c9d6}
+ ol{padding:0;list-style:none;counter-reset:s}
+ ol>li{counter-increment:s;background:#1e1e2c;border-radius:12px;padding:16px 16px 16px 60px;margin:14px 0;position:relative}
+ ol>li::before{content:counter(s);position:absolute;left:16px;top:14px;width:32px;height:32px;border-radius:50%;background:#2e7d32;color:#fff;
+   font-weight:700;display:flex;align-items:center;justify-content:center}
+ h2{font-size:1.1em;margin:0 0 .3em}
+ p{margin:.3em 0}
+ .btn{display:inline-block;margin-top:8px;padding:10px 16px;border-radius:8px;background:#2e7d32;color:#fff;text-decoration:none;font-weight:600}
+ .btn.blue{background:#1565c0}.btn.red{background:#c62828}
+ .btn.disabled{background:#555;pointer-events:none}
+ #zone-box{display:none;background:#33301a;border:1px solid #ffd54f;border-radius:10px;padding:10px 14px;margin:12px 0}
+ #zone-box b{color:#ffd54f}
+ small,.fine{color:#9a9aab;font-size:.85em}
+ a{color:#9cc8ff}
+</style></head>
+<body><main>
+<p class="fine">&#127876; Christmas Light Map 2026</p>
+<h1>Vote for your neighborhood</h1>
+<p class="lead">Every donation goes to <b>Rady Children&rsquo;s Hospital</b> and counts as a vote for your neighborhood. The zone with the most donations wins, and I&rsquo;ll drive every street in it and map its Christmas lights.</p>
+<div id="zone-box">You&rsquo;re voting for <b id="zone-label"></b>.</div>
+<ol>
+ <li><h2>Find your zone number</h2>
+  <p>Search your address on the map to get your zone number.</p>
+  <a class="btn blue" href="/2026/zones/">Open the zone map</a></li>
+ <li><h2>Donate to Rady Children&rsquo;s</h2>
+  <p>Any amount counts. No account needed.</p>
+  <a class="btn red" id="donate" href="GOFUNDME_URL" target="_blank" rel="noopener">Donate on GoFundMe</a></li>
+ <li><h2>Register your vote</h2>
+  <p>GoFundMe can&rsquo;t record which zone you&rsquo;re voting for, so tell us here. Use the name you donated under and we&rsquo;ll match it to your donation. Takes 30 seconds, and no sign-in is needed.</p>
+  <a class="btn" id="vote" href="FORM_URL" target="_blank" rel="noopener">Register my zone vote</a></li>
+</ol>
+<p class="fine">Donated anonymously? Your name is hidden from the public, but the organizer can still see it, so your vote still counts. Votes without a matching donation aren&rsquo;t counted.</p>
+<p class="fine">Don&rsquo;t want your house on the map? Just let us know and we&rsquo;ll remove it.</p>
+</main>
+<script>
+(function(){
+ var GOFUNDME_URL = "GOFUNDME_URL", FORM_URL = "FORM_URL", FORM_PREFILL = "FORM_PREFILL"; // FORM_PREFILL: pre-filled link with zone = 99
+ var z = parseInt(new URLSearchParams(location.search).get('zone'), 10);
+ var ok = z >= 1 && z <= 100;
+ if (ok) { document.getElementById('zone-label').textContent = 'Zone #' + z; document.getElementById('zone-box').style.display = 'block'; }
+ var vote = document.getElementById('vote'), donate = document.getElementById('donate');
+ if (ok && FORM_PREFILL.indexOf('http') === 0) vote.href = FORM_PREFILL.replace(/=99(&|$)/, '=' + z + '$1');
+ if (FORM_URL.indexOf('http') !== 0) { vote.classList.add('disabled'); vote.textContent = 'Vote form coming soon'; }
+ if (GOFUNDME_URL.indexOf('http') !== 0) { donate.classList.add('disabled'); donate.textContent = 'Donation link coming soon'; }
+})();
+</script>
+<!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "0eac4888b55b47a4aa716977a8186904"}'></script><!-- End Cloudflare Web Analytics -->
+</body></html>
