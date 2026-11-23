@@ -36,21 +36,25 @@
   <a class="btn red" id="donate" href="https://gofund.me/ba119d164" target="_blank" rel="noopener">Donate on GoFundMe</a></li>
  <li><h2>Register your vote</h2>
   <p>GoFundMe can&rsquo;t record which zone you&rsquo;re voting for, so tell us here. Use the name you donated under and we&rsquo;ll match it to your donation. Takes 30 seconds, and no sign-in is needed.</p>
-  <a class="btn" id="vote" href="FORM_URL" target="_blank" rel="noopener">Register my zone vote</a></li>
+  <a class="btn" id="vote" href="https://docs.google.com/forms/d/e/1FAIpQLSf8WkAVcSQsFZQ002nFmgO8-Ksep6SAGbmK_ohJSQ_hKLJr7Q/viewform" target="_blank" rel="noopener">Register my zone vote</a></li>
 </ol>
 <p class="fine">Donated anonymously? Your name is hidden from the public, but the organizer can still see it, so your vote still counts. Votes without a matching donation aren&rsquo;t counted.</p>
 <p class="fine">Don&rsquo;t want your house on the map? Just let us know and we&rsquo;ll remove it.</p>
 </main>
 <script>
 (function(){
- var https://gofund.me/ba119d164 = "https://gofund.me/ba119d164", FORM_URL = "FORM_URL", FORM_PREFILL = "FORM_PREFILL"; // FORM_PREFILL: pre-filled link with zone = 99
+ var GOFUNDME = "https://gofund.me/ba119d164";
+ var FORM = "https://docs.google.com/forms/d/e/1FAIpQLSf8WkAVcSQsFZQ002nFmgO8-Ksep6SAGbmK_ohJSQ_hKLJr7Q/viewform";
+ var FORM_PREFILL = "https://docs.google.com/forms/d/e/1FAIpQLSf8WkAVcSQsFZQ002nFmgO8-Ksep6SAGbmK_ohJSQ_hKLJr7Q/viewform?usp=pp_url&entry.561587973=99"; // pre-filled link with zone = 99
  var z = parseInt(new URLSearchParams(location.search).get('zone'), 10);
  var ok = z >= 1 && z <= 100;
- if (ok) { document.getElementById('zone-label').textContent = 'Zone #' + z; document.getElementById('zone-box').style.display = 'block'; }
  var vote = document.getElementById('vote'), donate = document.getElementById('donate');
- if (ok && FORM_PREFILL.indexOf('http') === 0) vote.href = FORM_PREFILL.replace(/=99(&|$)/, '=' + z + '$1');
- if (FORM_URL.indexOf('http') !== 0) { vote.classList.add('disabled'); vote.textContent = 'Vote form coming soon'; }
- if (https://gofund.me/ba119d164.indexOf('http') !== 0) { donate.classList.add('disabled'); donate.textContent = 'Donation link coming soon'; }
+ donate.href = GOFUNDME; vote.href = FORM;
+ if (ok) {
+   document.getElementById('zone-label').textContent = 'Zone #' + z;
+   document.getElementById('zone-box').style.display = 'block';
+   vote.href = FORM_PREFILL.replace(/=99(&|$)/, '=' + z + '$1');
+ }
 })();
 </script>
 <!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "0eac4888b55b47a4aa716977a8186904"}'></script><!-- End Cloudflare Web Analytics -->
