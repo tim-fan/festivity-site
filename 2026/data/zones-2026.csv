@@ -1,0 +1,98 @@
+id,name,area,houses,all_units,res_mi,drive_min,neighborhoods,n_streets,hours_at_1000_per_hr,est_drive_mi,n_parts
+1,Mira Mesa: Carroll Canyon Gateway,Mira Mesa + Scripps Miramar Ranch,4854,9773,28.2,3.2,"Mira Mesa, Miramar, Scripps Ranch, Sorrento Valley",197,4.9,49,1
+2,Mira Mesa: Parkdale,Mira Mesa,5905,7754,40.9,3.8,"Mira Mesa, Sorrento Valley",315,5.9,71,1
+3,Mira Mesa: Westview,Mira Mesa + Miramar Ranch North + Scripps Miramar Ranch + Sabre Springs,6483,10382,42.9,6.1,"Mira Mesa, Miramar Ranch North, Sabre Springs, Scripps Ranch",277,6.5,74,1
+4,Scripps Ranch,Scripps Miramar Ranch,5383,6390,42.9,10.1,Scripps Ranch,283,5.4,74,1
+5,Rancho Peñasquitos,Rancho Penasquitos,4262,5460,24.2,10.3,Rancho Penasquitos,139,4.3,42,1
+6,Miramar Ranch North / Sabre Springs,Miramar Ranch North + Sabre Springs + Scripps Miramar Ranch + Poway,2008,2474,12.9,10.6,"Miramar Ranch North, Poway Grove Park, Sabre Springs, Scripps Ranch",83,2.0,22,1
+7,Rancho Peñasquitos (Christmas Card Lane),Rancho Penasquitos + Torrey Highlands + Del Mar Mesa + Black Mountain Ranch,6089,6400,38.7,11.2,"Black Mountain Ranch, Rancho Penasquitos, Torrey Highlands",216,6.1,67,1
+8,Torrey Highlands / Rancho Peñasquitos,Torrey Highlands + Del Mar Mesa + Rancho Penasquitos,1354,2032,10.0,11.8,"Rancho Penasquitos, Torrey Highlands",82,1.4,17,1
+9,Carmel Mountain,Carmel Mountain Ranch + Sabre Springs + Poway,3716,6059,25.6,13.0,"Carmel Mountain, Poway Woods, Sabre Springs",166,3.7,44,1
+10,Poway Grove Park / Sabre Springs,Poway + Sabre Springs + Scripps Miramar Ranch + Miramar Ranch North,1800,1986,15.5,13.7,"Miramar Ranch North, Parkway Business Centre, Pomerado Business Park, Poway Grove Park, Sabre Springs, Scripps Ranch",105,1.8,27,1
+11,University City / La Jolla,University + Torrey Pines,3017,12694,17.2,14.3,"La Jolla, Torrey Preserve, University City",147,3.0,30,1
+12,Sabre Springs,Poway + Sabre Springs,4386,6803,37.7,14.4,"Cree, Golden City, Hickory, Holland, La Paz Village, Las Cadenas, Parkway Business Centre, Pomerado Business Park, Poway Grove Park, Poway Portals, Poway Town Center, Poway Woods, Rayo Del Sol, Sabre Springs",206,4.4,65,1
+13,Rancho Peñasquitos / Rancho Bernardo,Rancho Penasquitos + Rancho Bernardo,3266,5983,25.8,15.2,"Rancho Bernardo, Rancho Penasquitos",217,3.3,45,1
+14,University City,University,4659,6174,33.3,16.2,University City,187,4.7,58,1
+15,Carmel Valley: Torrey Hills,Carmel Valley + Torrey Hills + Los Penasquitos Canyon + Torrey Pines + University,3246,5761,30.2,16.3,"Carmel Valley, Torrey Pines, Torrey Preserve",242,3.2,52,1
+16,Carmel Valley: Carmel Creek,Carmel Valley + Pacific Highlands Ranch,6082,9484,34.7,16.6,"Carmel Valley, North City",313,6.1,60,1
+17,Tierrasanta: Santo Terrace,Tierrasanta + Mission Valley + Navajo + Kearny Mesa,3570,8095,17.2,16.7,"Allied Gardens, Grantville, Serra Mesa, Tierrasanta",98,3.6,30,1
+18,Rancho Bernardo: Bernardo Heights,Rancho Bernardo + Carmel Mountain Ranch + Poway,2426,4211,16.4,16.7,"Carmel Mountain, Casa Real Poway, Rancho Bernardo",114,2.4,28,1
+19,Twin Peaks,Poway,2579,3067,22.5,17.1,"Casa Real Poway, Huntington Gate, Las Cadenas, Piermont, Poway Woods, Rancho Arbolitos Woodside, Rancho Poway, Rayo Del Sol, Sunrise Ranch, Twin Peaks",141,2.6,39,1
+20,Clairemont Mesa East,Clairemont Mesa + Serra Mesa + Kearny Mesa + Linda Vista,6044,10792,40.8,17.1,"Birdland, Clairemont Mesa East, Kearny Mesa, Linda Vista, North Clairemont",265,6.0,71,1
+21,Black Mountain Ranch,Black Mountain Ranch + San Dieguito,1076,1189,21.5,17.2,"Black Mountain Ranch, Whispering Palms",90,1.1,37,1
+22,Tierrasanta: Summerton Hills,Tierrasanta + Navajo,4578,6711,29.6,17.4,"Allied Gardens, Tierrasanta",244,4.6,51,1
+23,Rancho Bernardo: Westwood,Rancho Bernardo + San Dieguito + Poway,5977,8491,42.1,17.5,"North 4S Ranch, Rancho Bernardo, Stoneridge Chateaus, Valle Verde Estates",277,6.0,73,1
+24,Carmel Valley: Del Mar Mesa,Del Mar Mesa + Pacific Highlands Ranch + Carmel Valley,1150,1202,15.6,17.8,Carmel Valley,92,1.2,27,1
+25,Carmel Valley / North City,Carmel Valley + North City,1438,2237,11.1,17.8,"Carmel Valley, North City",108,1.4,19,1
+26,Serra Mesa / Birdland,Serra Mesa + Mission Valley,1632,4600,9.1,17.9,"Birdland, Mission Valley East, Serra Mesa",79,1.6,16,1
+27,Serra Mesa,Serra Mesa + Kearny Mesa + Mission Valley,6035,10496,38.5,18.2,"Birdland, Kearny Mesa, Mission Valley East, Serra Mesa",262,6.0,67,1
+28,North 4S Ranch,San Dieguito + Black Mountain Ranch + Rancho Penasquitos,4930,6173,39.4,18.5,"4S Commons, Bel Etage, Black Mountain Ranch, Deer Ridge, North 4S Ranch, Rancho Penasquitos, Stone Ranch",263,4.9,68,1
+29,North Clairemont,Clairemont Mesa,4150,5075,25.5,18.6,"Clairemont Mesa East, North Clairemont",135,4.2,44,1
+30,Del Mar Heights,Torrey Pines + Del Mar + University,3298,4854,32.1,18.8,"Beach Colony, Del Mar Bluffs, Del Mar Heights, Torrey Pines, Torrey Preserve",184,3.3,56,1
+31,Lakeside,Poway + Lakeside,2560,3344,37.9,19.4,"Avocado Glen, Bridlewood Lakeside, Lakeside, Parkway Business Centre, Piermont, Poway Town Center, Rancho La Paz, Rancho Poway, Sunrise Ranch",198,2.6,66,1
+32,Kensington,Kensington-Talmadge,2128,3056,13.7,19.7,Kensington,65,2.1,24,1
+33,Cardiff Cove,Solana Beach + Encinitas,3016,4889,22.9,19.8,"Cardiff Cove, Cedros Ave Design District, Del Mar Downs, Eden Gardens, Lomas Santa Fe, Solana Beach Bluffs, Solana Palisades",152,3.0,40,1
+34,Bay Ho,Clairemont Mesa,5143,8468,30.0,19.9,"Bay Ho, Bay Park, North Clairemont",171,5.1,52,1
+35,Linda Vista,Linda Vista + Clairemont Mesa + Mission Valley,6234,14124,40.6,19.9,"Bay Park, Linda Vista, Mission Valley West, Morena",259,6.2,70,1
+36,Adams North / Normal Heights,Normal Heights + City Heights + Mission Valley,5697,13950,22.9,20.1,"Adams North, Cherokee Point, Corridor, Mission Valley East, Normal Heights",99,5.7,40,1
+37,La Jolla: Hidden Valley,La Jolla + University,5183,9410,43.3,20.2,"La Jolla, University City",272,5.2,75,1
+38,Rancho Bernardo: Oaks North,Rancho Bernardo,3432,4455,29.9,20.5,Rancho Bernardo,214,3.4,52,1
+39,Rancho Verde / Kit Carson: Bernardo Vista Del Lago,North County Metro + Escondido + San Pasqual,1191,1198,16.4,20.6,"Felicita, Kit Carson, Rancho Verde, San Pasqual",105,1.2,28,1
+40,Clairemont Mesa West,Clairemont Mesa,3744,3954,22.5,20.6,Clairemont Mesa West,114,3.7,39,1
+41,North City / Carmel Valley,Pacific Highlands Ranch + San Dieguito + Carmel Valley + North City,3225,4419,34.4,20.6,"Carmel Valley, North City, Whispering Palms",246,3.2,60,1
+42,Black Mountain Ranch / Bel Etage,Black Mountain Ranch + San Dieguito,2755,3316,36.7,20.8,"Bel Etage, Black Mountain Ranch",216,2.8,63,1
+43,Green Valley Estates South / The Grove,Poway,2395,2591,39.2,21.4,"Bridlewood, Bridlewood Lakeside, Casa Real Poway, Green Valley Estates South, Huntington Gate, Sunrise Ranch, The Grove, Valle Verde Estates",200,2.4,68,1
+44,Talmadge / Castle,City Heights + Kensington-Talmadge + College Area,5991,17330,33.6,21.4,"Castle, Cherokee Point, Chollas Creek, Colina Del Sol, College West, Fairmount Village, Fox Canyon, Talmadge, Teralta East, Teralta West",131,6.0,58,1
+45,North Park / University Heights,North Park + Uptown + Mission Valley + Balboa Park + Serra Mesa,7254,29405,36.0,21.7,"Balboa Park, Birdland, Hillcrest, Mission Valley East, North Park, University Heights",194,7.3,62,1
+46,Allied Gardens / San Carlos,Navajo,7148,9726,42.9,21.9,"Allied Gardens, Del Cerro, Grantville, Lake Murray, San Carlos",243,7.1,74,1
+47,Whispering Palms,San Dieguito + Torrey Highlands,1859,2020,37.2,22.0,"Torrey Highlands, Whispering Palms",160,1.9,64,1
+48,Rancho Verde / Kit Carson: Felicita,North County Metro + Escondido,1417,1924,16.4,22.3,"Felicita, Kit Carson, Rancho Verde",95,1.4,28,1
+49,Pacific Beach,Pacific Beach + La Jolla,4414,11339,33.3,22.5,"La Jolla, Pacific Beach",144,4.4,58,1
+50,Lomas Santa Fe / Rancho Del Mar,San Dieguito + Solana Beach,3099,3413,35.4,22.5,"Lomas Santa Fe, Rancho Del Mar, Whispering Palms",221,3.1,61,1
+51,Carlton Oaks / Tierrasanta,Santee + Tierrasanta,1269,2320,13.1,22.7,"Carlton Oaks, Tierrasanta",92,1.3,23,1
+52,College West / College East,College Area + Eastern Area + La Mesa + Navajo,4558,7986,30.9,22.7,"College East, College West, El Cerrito, Grantville, La Mesa Colony, Rolando",181,4.6,53,1
+53,Bay Park,Clairemont Mesa + Linda Vista,4296,5411,31.6,22.9,"Bay Park, Morena",175,4.3,55,1
+54,Mt. Hope,City Heights + Southeastern San Diego,5262,8325,30.7,23.1,"Azalea/Hollywood Park, Chollas Creek, Fairmount Park, Fairmount Village, Fox Canyon, Mt. Hope, Ridgeview/Webster, Swan Canyon",190,5.3,53,1
+55,Hillcrest / Mission Hills,Uptown + Old Town San Diego + Downtown + Midway-Pacific Highway + Balboa Park + Mission Valley,6510,23104,44.4,23.2,"Balboa Park, Harborview, Hillcrest, Little Italy, Midtown, Midway District, Mission Hills, Mission Valley West, Old Town, Park West",364,6.5,77,1
+56,Old Escondido / Felicita,Escondido + North County Metro,5648,11398,40.7,23.8,"Auto Park, Downtown, Felicita, Los Arboles, Mission Park, Oak Hill, Old Escondido, Rancho Verde, Westside",233,5.6,70,1
+57,Carlton Hills / Carlton Oaks,Santee,4945,5475,36.9,23.8,"Carlton Hills, Carlton Oaks",201,4.9,64,1
+58,Cardiff-by-the-Sea / Encinitas Highlands,Encinitas,2902,4164,16.7,23.9,"Cardiff-by-the-Sea, Composer District, Downtown Encinitas, Encinitas Highlands",94,2.9,29,1
+59,North Park / South Park,North Park + Greater Golden Hill + Southeastern San Diego + Balboa Park + Downtown,7307,17593,44.4,24.0,"Balboa Park, Burlingame, East Village, Golden Hill, North Park, South Park, Stockton",223,7.3,77,1
+60,Cardiff Highlands / Manzanita Cove,Encinitas,4466,6232,29.4,24.1,"Cardiff Highlands, Encinitas Ranch, Manzanita Cove, New Encinitas, Pacific Serena, Poinsettia Heights, Quail Gardens",206,4.5,51,1
+61,Pacific Beach / Mission Beach,Pacific Beach + Mission Beach + Mission Bay Park,5524,14310,30.1,24.2,"La Jolla, Mission Bay, Mission Beach, Pacific Beach",76,5.5,52,2
+62,Carlton Oaks,Santee + El Cajon,1999,3452,16.9,24.2,"Carlton Hills, Carlton Oaks, Fletcher Hills",135,2.0,29,1
+63,Logan Heights,Southeastern San Diego + Barrio Logan + Downtown + Greater Golden Hill + San Diego,6359,18674,30.9,24.3,"Barrio Logan, Core-Columbia, East Village, Golden Hill, Grant Hill, Horton Plaza, Logan Heights, Marina, Mercado District, Mountain View, Petco Park, Sherman Heights, Stockton",171,6.4,53,1
+64,La Mesa Colony / Rolando,La Mesa + Eastern Area + Navajo + College Area,6854,14380,40.0,24.4,"College East, El Cerrito, La Mesa Colony, Lake Murray, Mount Nebo, Rasonia, Redwood Village, Rolando, Rolando Knolls, San Carlos, Vista La Mesa",232,6.9,69,1
+65,Auto Park,Escondido + North County Metro,2486,4483,34.2,24.8,"Auto Park, Felicita, Rancho Verde, Westside",278,2.5,59,1
+66,Del Cerro / San Carlos,Navajo + College Area,3228,4637,28.1,25.1,"College East, Del Cerro, Lake Murray, San Carlos",139,3.2,49,1
+67,Lake Murray,La Mesa,2287,4008,13.9,25.4,"Grossmont, Lake Murray",75,2.3,24,1
+68,Oak Park,Eastern Area + City Heights,6654,9251,40.0,25.5,"Oak Park, Redwood Village, Ridgeview/Webster, Rolando Park",266,6.7,69,1
+69,Chollas View / Emerald Hills,Encanto Neighborhoods + City Heights,1723,2268,10.4,25.6,"Chollas View, Emerald Hills, Ridgeview/Webster",69,1.7,18,1
+70,La Jolla: La Jolla Alta,La Jolla + Pacific Beach,4714,5269,44.9,25.6,La Jolla,258,4.7,78,1
+71,Point Loma Heights / Loma Portal,Peninsula + Midway-Pacific Highway + Ocean Beach,6576,13144,40.6,25.7,"Loma Portal, Midway District, Ocean Beach, Point Loma Heights, Roseville / Fleet Ridge",207,6.6,70,1
+72,Mountain View,Southeastern San Diego + Barrio Logan + National City,4959,7911,26.4,25.8,"Barrio Logan, Mountain View, Mt. Hope, Rancho de la Nación, Shelltown, Southcrest",142,5.0,46,1
+73,New Encinitas,Encinitas,3354,3709,26.3,26.0,"Cardiff Highlands, New Encinitas, Olivenhain, Poinsettia Heights, Village Park",184,3.4,45,1
+74,Ocean Beach,Ocean Beach + Mission Bay Park,3114,6790,14.6,26.0,"Mission Bay, Ocean Beach",28,3.1,25,2
+75,Leucadia / Downtown Encinitas,Encinitas,4566,7373,29.8,26.3,"Downtown Encinitas, Encinitas Ranch, Leucadia, Quail Gardens",248,4.6,52,1
+76,Kit Carson / Rancho Verde,Escondido + North County Metro + San Pasqual,2007,2161,35.2,26.3,"Kit Carson, Rancho Verde, San Pasqual",202,2.0,61,1
+77,Lake Murray,Navajo + La Mesa + Santee,5452,6884,34.8,26.7,"Carlton Oaks, Lake Murray",159,5.5,60,1
+78,Brookside / La Mesa Highlands,La Mesa + Spring Valley + Valle De Oro,6077,9731,43.2,26.9,"Brookside, Grossmont, La Mesa Highlands, Mount Nebo, Vista La Mesa",308,6.1,75,1
+79,Rancho Verde / Oak Hill,Escondido + North County Metro,3577,6413,37.1,26.9,"East Valley, Felicita, Kit Carson, Los Arboles, Oak Hill, Orange Glen, Rancho Verde",266,3.6,64,1
+80,Valencia Park,Encanto Neighborhoods + National City + County Islands,7313,11278,44.4,27.0,"Cypress Glen, El Toyon, Emerald Hills, Ira Harbison, Las Palmas, Lincoln Park, Lynwood Hills, O'Farrell, Rancho de la Nación, Valencia Park",302,7.3,77,1
+81,Fletcher Hills / Severin Grossmont Hills,El Cajon + La Mesa,4786,6936,43.3,27.3,"Cajon Heights, Fletcher Hills, Grossmont, Severin Grossmont Hills",228,4.8,75,1
+82,Carlton Hills / Sky Ranch,Santee + Lakeside,5808,7074,40.0,27.4,"Carlton Hills, Lakeside, Sky Ranch",315,5.8,69,1
+83,Sky Ranch,Santee + El Cajon,2461,4912,25.0,27.5,"Carlton Hills, Fletcher Hills, Sky Ranch",181,2.5,43,1
+84,Riverview Farms / Granite Hills,Lakeside + El Cajon,3712,6634,27.4,27.9,"Fletcher Hills, Granite Hills, Lakeside, Riverview Farms",203,3.7,47,1
+85,South Bay Plaza,National City + Barrio Logan,4686,11052,43.9,27.9,"Barrio Logan, Education Village, El Toyon, Harbor District, John Otis, Las Palmas, Marina Gateway, Mile of Cars, Olivewood, Rancho de la Nación, South Bay Plaza",256,4.7,76,1
+86,North Broadway,Escondido,3256,8503,28.7,27.9,"Auto Park, Mission Park, North Broadway",248,3.3,50,1
+87,Roseville / Fleet Ridge / Wooded Area,Peninsula,4378,5193,41.9,27.9,"Midway District, Point Loma Heights, Roseville / Fleet Ridge, Sunset Cliffs, Wooded Area",225,4.4,72,1
+88,Olivenhain / Village Park,Encinitas + San Dieguito,3281,3680,31.3,28.2,"Olivenhain, Rancho Del Mar, Rancho Encinitas, Village Park",208,3.3,54,1
+89,Encanto / O'Farrell,Encanto Neighborhoods + National City + Lemon Grove,5215,7274,35.7,28.2,"Emerald Hills, Encanto, Ira Harbison, O'Farrell, San Altos, Sonka Urban Heights",208,5.2,62,1
+90,Cajon Heights,El Cajon,4010,11148,29.8,28.5,"Cajon Heights, Fletcher Hills",153,4.0,52,1
+91,Mission Park / East Valley,Escondido,5356,8579,31.9,28.8,"East Valley, Mission Park, North Broadway, Orange Glen",244,5.4,55,1
+92,Richland / Nordahl,San Marcos,4440,6745,39.3,29.3,"Nordahl, Richland",275,4.4,68,1
+93,Las Playas / Seagate,Carlsbad,2629,3494,21.6,29.5,"Harbor Pointe, Las Playas, Seagate",165,2.6,37,1
+94,La Costa Valley,Carlsbad,2291,3387,18.9,29.8,"La Costa Valley, Las Playas",159,2.3,33,1
+95,San Altos / Sonka Urban Heights,Lemon Grove,3089,4259,17.5,30.0,"San Altos, Sonka Urban Heights",130,3.1,30,1
+96,Riverview Farms,Lakeside + Santee,2732,5355,23.7,30.4,"Riverview, Riverview Farms, Sky Ranch",198,2.7,41,1
+97,Moreno / Lakeside,Lakeside,2129,4706,24.9,30.4,"Lakeside, Moreno, Riverview",146,2.1,43,1
