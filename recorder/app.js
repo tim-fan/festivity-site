@@ -5,7 +5,7 @@ import { renderCharts } from './charts.js';
 
 const $ = (id) => document.getElementById(id);
 const SETTINGS_KEY = 'theta-settings';
-const APP_VERSION = '2026-11-26.9';
+const APP_VERSION = '2026-11-26.10';
 const qsTelemetry = new URLSearchParams(location.search).get('telemetry');
 if (qsTelemetry !== null) localStorage.setItem('theta-telemetry', qsTelemetry); // ?telemetry= (empty) turns it off
 const TELEMETRY = location.hostname === 'localhost' ? '/api/log' : (localStorage.getItem('theta-telemetry') || null);
@@ -176,13 +176,23 @@ setInterval(async () => {
 }, 500);
 
 // ---------- camera view (thumbnails: pre-drive check + each stationary rollover) ----------
-function showThumb(blob, label) {
+const THUMB_KEY = 'theta-last-thumb';
+function setThumb(src, labelText) {
   const img = $('cam-view');
-  if (img.dataset.url) URL.revokeObjectURL(img.dataset.url);
-  img.dataset.url = URL.createObjectURL(blob);
-  img.src = img.dataset.url; img.hidden = false;
-  $('cam-view-label').textContent = `— ${label} · ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+  img.onerror = () => { img.hidden = true; $('cam-view-label').textContent = '(tap “Check camera view”, or wait for a stop-sign rollover)'; };
+  img.src = src; img.hidden = false;
+  $('cam-view-label').textContent = labelText;
 }
+function showThumb(blob, label) {
+  const labelText = `— ${label} · ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+  const reader = new FileReader(); // keep it as a data URL so it survives reloads (thumbnails are ~30 KB)
+  reader.onload = () => {
+    setThumb(reader.result, labelText);
+    try { localStorage.setItem(THUMB_KEY, JSON.stringify({ src: reader.result, label: labelText })); } catch { /* storage full: show only */ }
+  };
+  reader.readAsDataURL(blob);
+}
+try { const t = JSON.parse(localStorage.getItem(THUMB_KEY) || 'null'); if (t?.src) setThumb(t.src, t.label); } catch { /* none saved */ }
 recorder.onThumbnail = showThumb;
 $('b-check').onclick = async () => {
   $('b-check').disabled = true; $('cam-view-label').textContent = 'recording a 3 s test clip…';
