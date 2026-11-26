@@ -1,8 +1,9 @@
 // Offline support: serve the app shell from cache, refresh it in the background when online.
-const CACHE = 'theta-recorder-v7';
+const CACHE = 'theta-recorder-v8';
 const SHELL = ['./', 'index.html', 'app.js', 'ptp.js', 'recorder.js', 'charts.js', 'manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png'];
 self.addEventListener('install', (e) => {
-  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting()));
+  // cache: 'reload' bypasses the browser HTTP cache so an update never caches a stale file
+  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL.map((u) => new Request(u, { cache: 'reload' })))).then(() => self.skipWaiting()));
 });
 self.addEventListener('activate', (e) => {
   e.waitUntil(caches.keys().then((ks) => Promise.all(ks.filter((k) => k !== CACHE).map((k) => caches.delete(k)))).then(() => self.clients.claim()));
@@ -13,7 +14,7 @@ self.addEventListener('fetch', (e) => {
   // stale-while-revalidate: instant from cache (works offline), update cache from network when possible
   e.respondWith(caches.open(CACHE).then(async (c) => {
     const cached = await c.match(e.request, { ignoreSearch: true });
-    const net = fetch(e.request).then((r) => { if (r.ok) c.put(e.request, r.clone()); return r; }).catch(() => cached);
+    const net = fetch(e.request, { cache: 'no-cache' }).then((r) => { if (r.ok) c.put(e.request, r.clone()); return r; }).catch(() => cached);
     return cached || net;
   }));
 });
