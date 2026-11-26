@@ -136,8 +136,11 @@ export class Recorder {
       this.onEvent({ type: 'rollover', reason, stopMs: Date.now() - t0 });
       // While stopped (car stationary), grab the finished clip's thumbnail for the "camera view" panel.
       if (this.onThumbnail) {
-        try { const h = await this.camera.newestObject(); if (h) this.onThumbnail(await this.camera.thumbnail(h), 'end of clip ' + this.clip); }
-        catch (e) { this.log('thumbnail skipped: ' + e.message); }
+        try {
+          const h = this.handlesBeforeClip ? await this.camera.waitForNewObject(this.handlesBeforeClip, 3000) : null;
+          if (h) this.onThumbnail(await this.camera.thumbnail(h), 'end of clip ' + this.clip);
+          else this.log('thumbnail skipped: finished clip not listed yet');
+        } catch (e) { this.log('thumbnail skipped: ' + e.message); }
       }
       await this._startClip();
       return true;
@@ -153,13 +156,15 @@ export class Recorder {
   async checkView() {
     if (this.running || !this.camera) throw new Error('stop recording first');
     const c = this.camera;
+    const before = await c.objectHandles();
     await c.startRecording();
     await new Promise((r) => setTimeout(r, 3000));
     await c.stopRecording();
     for (let i = 0; i < 40; i++) { if ((await c.getProp(PROP.CaptureStatus)) === 0) break; await new Promise((r) => setTimeout(r, 100)); }
-    const h = await c.newestObject();
+    const h = await c.waitForNewObject(before);
+    if (h == null) throw new Error('test clip did not appear on the camera; nothing deleted');
     const jpg = await c.thumbnail(h);
-    await c.deleteObject(h);
+    await c.deleteObject(h); // only ever the clip this check just recorded
     return jpg;
   }
 
@@ -193,6 +198,7 @@ export class Recorder {
       }
     } catch (e) { this.log('status check before start failed: ' + e.message); return; }
     this.clip += 1;
+    try { this.handlesBeforeClip = await this.camera.objectHandles(); } catch (e) { this.handlesBeforeClip = null; }
     const t0 = Date.now();
     let replyCode = null;
     try {

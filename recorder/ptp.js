@@ -192,12 +192,27 @@ export class PtpCamera {
     return Number(iv.getBigUint64(14, true));
   }
 
-  // Newest object handle on the camera (only works while not recording).
-  async newestObject() {
+  // All object handles on the camera (only works while not recording).
+  async objectHandles() {
     const h = await this.transaction(0x1007, [0xffffffff, 0, 0]);
     const dv = new DataView(h.data.buffer, h.data.byteOffset, h.data.byteLength);
-    const n = dv.getUint32(0, true);
-    return n ? dv.getUint32(4 + 4 * (n - 1), true) : null;
+    const n = dv.getUint32(0, true), out = [];
+    for (let i = 0; i < n; i++) out.push(dv.getUint32(4 + 4 * i, true));
+    return out;
+  }
+
+  // Wait until a handle not in `before` appears (a just-finished clip can take a moment to be listed).
+  // Returns it, or null if nothing new shows up within timeoutMs. Never guesses.
+  async waitForNewObject(before, timeoutMs = 8000) {
+    const known = new Set(before), t0 = Date.now();
+    while (Date.now() - t0 < timeoutMs) {
+      try {
+        const fresh = (await this.objectHandles()).filter((h) => !known.has(h));
+        if (fresh.length) return Math.max(...fresh);
+      } catch (e) { /* busy while finalising: retry */ }
+      await new Promise((r) => setTimeout(r, 250));
+    }
+    return null;
   }
 
   // JPEG thumbnail (Blob) of an object; the Z1 gives a 640x320 dual-fisheye frame for videos.
