@@ -5,7 +5,7 @@ import { renderCharts } from './charts.js';
 
 const $ = (id) => document.getElementById(id);
 const SETTINGS_KEY = 'theta-settings';
-const APP_VERSION = '2026-11-26.10';
+const APP_VERSION = '2026-11-26.11';
 const qsTelemetry = new URLSearchParams(location.search).get('telemetry');
 if (qsTelemetry !== null) localStorage.setItem('theta-telemetry', qsTelemetry); // ?telemetry= (empty) turns it off
 const TELEMETRY = location.hostname === 'localhost' ? '/api/log' : (localStorage.getItem('theta-telemetry') || null);
@@ -174,6 +174,29 @@ setInterval(async () => {
     await recorder.rollover('stationary');
   }
 }, 500);
+
+// ---------- hourly mount check (shown at the first stop after each hour of recording) ----------
+const MOUNT_CHECK_MS = 60 * 60 * 1000;
+let lastMountCheck = Number(localStorage.getItem('theta-last-mount-check')) || null;
+let mountPromptShown = false;
+function mountCheckDue() {
+  if (!wantRunning || !sessionStart) return false;
+  return Date.now() - (lastMountCheck && lastMountCheck > sessionStart ? lastMountCheck : sessionStart) > MOUNT_CHECK_MS;
+}
+setInterval(() => {
+  const due = mountCheckDue();
+  if (due && !mountPromptShown && stoppedSince && Date.now() - stoppedSince > 3000) {
+    mountPromptShown = true; $('mount-check').hidden = false;
+    tone(660, 0.15); setTimeout(() => tone(880, 0.2), 200); navigator.vibrate?.([200, 100, 200]);
+    event({ type: 'mount_check_prompt' }); log('mount check due');
+  }
+  if (!due && mountPromptShown) { mountPromptShown = false; $('mount-check').hidden = true; }
+}, 1000);
+$('b-mount-ok').onclick = () => {
+  lastMountCheck = Date.now(); localStorage.setItem('theta-last-mount-check', String(lastMountCheck));
+  mountPromptShown = false; $('mount-check').hidden = true;
+  event({ type: 'mount_check_done' }); log('mount checked');
+};
 
 // ---------- camera view (thumbnails: pre-drive check + each stationary rollover) ----------
 const THUMB_KEY = 'theta-last-thumb';
