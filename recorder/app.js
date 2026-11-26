@@ -5,7 +5,7 @@ import { renderCharts } from './charts.js';
 
 const $ = (id) => document.getElementById(id);
 const SETTINGS_KEY = 'theta-settings';
-const APP_VERSION = '2026-11-26.11';
+const APP_VERSION = '2026-11-26.12';
 const qsTelemetry = new URLSearchParams(location.search).get('telemetry');
 if (qsTelemetry !== null) localStorage.setItem('theta-telemetry', qsTelemetry); // ?telemetry= (empty) turns it off
 const TELEMETRY = location.hostname === 'localhost' ? '/api/log' : (localStorage.getItem('theta-telemetry') || null);
@@ -175,27 +175,24 @@ setInterval(async () => {
   }
 }, 500);
 
-// ---------- hourly mount check (shown at the first stop after each hour of recording) ----------
+// ---------- hourly mount check: a gentle reminder card every hour of recording ----------
 const MOUNT_CHECK_MS = 60 * 60 * 1000;
 let lastMountCheck = Number(localStorage.getItem('theta-last-mount-check')) || null;
-let mountPromptShown = false;
-function mountCheckDue() {
-  if (!wantRunning || !sessionStart) return false;
-  return Date.now() - (lastMountCheck && lastMountCheck > sessionStart ? lastMountCheck : sessionStart) > MOUNT_CHECK_MS;
+function showMountCheck() {
+  $('mount-check').hidden = false;
+  if (audio) { const o = audio.createOscillator(), g = audio.createGain(); o.type = 'sine'; o.frequency.value = 880; // one soft ping
+    g.gain.setValueAtTime(0.15, audio.currentTime); g.gain.exponentialRampToValueAtTime(0.001, audio.currentTime + 0.6);
+    o.connect(g).connect(audio.destination); o.start(); o.stop(audio.currentTime + 0.6); }
+  event({ type: 'mount_check_prompt' });
 }
 setInterval(() => {
-  const due = mountCheckDue();
-  if (due && !mountPromptShown && stoppedSince && Date.now() - stoppedSince > 3000) {
-    mountPromptShown = true; $('mount-check').hidden = false;
-    tone(660, 0.15); setTimeout(() => tone(880, 0.2), 200); navigator.vibrate?.([200, 100, 200]);
-    event({ type: 'mount_check_prompt' }); log('mount check due');
-  }
-  if (!due && mountPromptShown) { mountPromptShown = false; $('mount-check').hidden = true; }
-}, 1000);
+  if (!wantRunning || !sessionStart || !$('mount-check').hidden) return;
+  const since = lastMountCheck && lastMountCheck > sessionStart ? lastMountCheck : sessionStart;
+  if (Date.now() - since > MOUNT_CHECK_MS) showMountCheck();
+}, 5000);
 $('b-mount-ok').onclick = () => {
   lastMountCheck = Date.now(); localStorage.setItem('theta-last-mount-check', String(lastMountCheck));
-  mountPromptShown = false; $('mount-check').hidden = true;
-  event({ type: 'mount_check_done' }); log('mount checked');
+  $('mount-check').hidden = true; event({ type: 'mount_check_done' }); log('mount checked');
 };
 
 // ---------- camera view (thumbnails: pre-drive check + each stationary rollover) ----------
@@ -382,7 +379,7 @@ $('b-clear').onclick = async () => {
 };
 
 // Handle for remote debugging via Chrome DevTools
-window.app = { recorder, get camera() { return camera; }, log, exportData, getAll, get status() { return lastStatus; } };
+window.app = { showMountCheck, recorder, get camera() { return camera; }, log, exportData, getAll, get status() { return lastStatus; } };
 
 navigator.storage?.persist?.().then((ok) => log('persistent storage: ' + (ok ? 'granted' : 'NOT granted (data may be evicted if the tablet runs low on space)')));
 event({ type: 'clock_anchor', wall: Date.now(), timeOrigin: performance.timeOrigin });
