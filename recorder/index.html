@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Theta Recorder</title>
+<link rel="icon" href="icons/icon-192.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#111111">
+<style>
+  :root { color-scheme: dark; }
+  body { font-family: system-ui, sans-serif; margin: 0; background: #111; color: #eee; }
+  #banner { padding: 14px; font-size: 28px; font-weight: 700; text-align: center; background: #444; }
+  #banner.rec { background: #0a6b2a; }
+  #banner.err { background: #b00020; animation: blink 1s infinite; }
+  #banner.idle { background: #444; }
+  #banner.warn { background: #8a5a00; }
+  @keyframes blink { 50% { opacity: .55; } }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 6px; padding: 8px; }
+  .tile { background: #222; border-radius: 8px; padding: 8px; }
+  .tile .k { font-size: 12px; color: #aaa; }
+  .tile .v { font-size: 22px; font-weight: 600; }
+  .row { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 8px 8px; }
+  button { font-size: 18px; padding: 12px 14px; border-radius: 8px; border: 0; background: #2d5bd7; color: #fff; }
+  button.stop { background: #b00020; }
+  button.sec { background: #333; }
+  button:disabled { opacity: .4; }
+  details { margin: 0 8px 8px; background: #1a1a1a; border-radius: 8px; padding: 8px; }
+  label { display: inline-block; margin: 4px 10px 4px 0; }
+  select, input { font-size: 16px; }
+  #log { font: 12px ui-monospace, monospace; white-space: pre-wrap; margin: 0 8px; max-height: 40vh; overflow: auto; background: #000; padding: 6px; border-radius: 6px; }
+</style>
+</head>
+<body>
+<div id="banner" class="idle">NOT CONNECTED</div>
+<div class="grid">
+  <div class="tile"><div class="k">Clip</div><div class="v" id="t-clip">–</div></div>
+  <div class="tile"><div class="k">Clip time</div><div class="v" id="t-rec">–</div></div>
+  <div class="tile"><div class="k">Battery</div><div class="v" id="t-batt">–</div></div>
+  <div class="tile"><div class="k">Storage left (est.)</div><div class="v" id="t-store">–</div></div>
+  <div class="tile"><div class="k">GPS</div><div class="v" id="t-gps">–</div></div>
+  <div class="tile"><div class="k">Session</div><div class="v" id="t-sess">–</div></div>
+</div>
+<div class="row">
+  <button id="b-connect">Connect camera</button>
+  <button id="b-start" disabled>Start</button>
+  <button id="b-stop" class="stop" disabled>Stop</button>
+  <button id="b-export" class="sec">Export data</button>
+</div>
+<details>
+  <summary>Camera settings (applied on connect / Apply)</summary>
+  <label>Exposure <select id="s-exposure"><option value="manual">Manual</option><option value="auto">Auto</option></select></label>
+  <label>ISO <select id="s-iso"></select></label>
+  <label>Shutter 1/<select id="s-shutter"></select></label>
+  <label>Aperture <select id="s-f"><option value="210">f/2.1</option><option value="350">f/3.5</option><option value="560">f/5.6</option></select></label>
+  <label>Clip length <select id="s-clip"><option value="1500">25 min</option><option value="300">5 min</option></select></label>
+  <label>Resolution <select id="s-size"><option value="1920x960">2K</option><option value="3840x1920">4K</option></select></label>
+  <button id="b-apply" class="sec" disabled>Apply</button>
+  <button id="b-clear" class="sec">Clear stored data</button>
+</details>
+<pre id="log"></pre>
+<script type="module" src="app.js"></script>
+</body>
+</html>
