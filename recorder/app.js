@@ -5,7 +5,7 @@ import { renderCharts } from './charts.js';
 
 const $ = (id) => document.getElementById(id);
 const SETTINGS_KEY = 'theta-settings';
-const APP_VERSION = '2026-11-26.3';
+const APP_VERSION = '2026-11-26.4';
 const qsTelemetry = new URLSearchParams(location.search).get('telemetry');
 if (qsTelemetry !== null) localStorage.setItem('theta-telemetry', qsTelemetry); // ?telemetry= (empty) turns it off
 const TELEMETRY = location.hostname === 'localhost' ? '/api/log' : (localStorage.getItem('theta-telemetry') || null);
@@ -76,6 +76,10 @@ function readSettingsUI() {
   localStorage.setItem(SETTINGS_KEY, JSON.stringify(s));
   return s;
 }
+
+// ---------- tablet battery ----------
+let tabletBattery = null;
+navigator.getBattery?.().then((b) => { tabletBattery = b; b.addEventListener('levelchange', () => render()); b.addEventListener('chargingchange', () => render()); }).catch(() => {});
 
 // ---------- camera ----------
 let camera = null;
@@ -221,7 +225,8 @@ function render() {
   else { b.className = 'warn'; b.textContent = 'CAMERA NOT CONNECTED'; }
   $('t-clip').textContent = recorder.clip || '–';
   $('t-rec').textContent = lastStatus.recSec != null ? fmtDur(lastStatus.recSec) : '–';
-  $('t-batt').textContent = lastStatus.battery != null ? lastStatus.battery + '%' : '–';
+  $('t-batt').textContent = camera && lastStatus.battery != null ? lastStatus.battery + '%' : '–';
+  $('t-tbatt').textContent = tabletBattery ? `${Math.round(tabletBattery.level * 100)}%${tabletBattery.charging ? ' ⚡' : ''}` : '–';
   if (lastStatus.freeBytes != null) {
     let free = lastStatus.freeBytes;
     if (wantRunning && lastStatus.freeAt) free -= (Date.now() - lastStatus.freeAt) / 1000 * bytesPerSec($('s-size').value);
@@ -238,8 +243,6 @@ function render() {
 const SAMPLES_KEY = 'theta-samples';
 let samples = [];
 try { samples = JSON.parse(localStorage.getItem(SAMPLES_KEY) || '[]'); } catch { samples = []; }
-let tabletBattery = null;
-navigator.getBattery?.().then((b) => { tabletBattery = b; }).catch(() => {});
 function freeBytesNow() {
   const s = lastStatus;
   if (s.freeBytes == null || !s.freeAt) return [null, false];
