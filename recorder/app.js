@@ -5,7 +5,7 @@ import { renderCharts } from './charts.js';
 
 const $ = (id) => document.getElementById(id);
 const SETTINGS_KEY = 'theta-settings';
-const APP_VERSION = '2026-11-26.5';
+const APP_VERSION = '2026-11-26.6';
 const qsTelemetry = new URLSearchParams(location.search).get('telemetry');
 if (qsTelemetry !== null) localStorage.setItem('theta-telemetry', qsTelemetry); // ?telemetry= (empty) turns it off
 const TELEMETRY = location.hostname === 'localhost' ? '/api/log' : (localStorage.getItem('theta-telemetry') || null);
@@ -160,19 +160,37 @@ function startGps() {
 }
 
 // ---------- planned rollover while stationary ----------
+// Uses GPS-reported speed (Doppler-based, far steadier than position changes).
 const ROLLOVER_AFTER_SEC = 900; // from 15 min into a clip...
 let stoppedSince = null;
 setInterval(async () => {
-  const sp = lastFix && Date.now() - lastFix.t < 3000 ? lastFix.spd : null;
-  stoppedSince = sp != null && sp < 0.5 ? (stoppedSince ?? Date.now()) : null;
-  // ...roll over at the first moment the car has been stopped for 2 s.
+  const fresh = lastFix && Date.now() - lastFix.t < 2500;
+  const slow = fresh && lastFix.spd != null && lastFix.spd < 0.5 && lastFix.acc != null && lastFix.acc < 30;
+  stoppedSince = slow ? (stoppedSince ?? Date.now()) : null;
+  // ...roll over at the first moment the car has been stopped for 3 s.
   if (wantRunning && recorder.running && lastStatus.captureStatus === 1 && lastStatus.recSec >= ROLLOVER_AFTER_SEC &&
-      stoppedSince && Date.now() - stoppedSince > 2000) {
+      stoppedSince && Date.now() - stoppedSince > 3000) {
     log(`car stopped at clip time ${lastStatus.recSec} s — rolling over to a new clip now`);
     stoppedSince = null;
     await recorder.rollover('stationary');
   }
 }, 500);
+
+// ---------- camera view (thumbnails: pre-drive check + each stationary rollover) ----------
+function showThumb(blob, label) {
+  const img = $('cam-view');
+  if (img.dataset.url) URL.revokeObjectURL(img.dataset.url);
+  img.dataset.url = URL.createObjectURL(blob);
+  img.src = img.dataset.url; img.hidden = false;
+  $('cam-view-label').textContent = `${label} · ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+}
+recorder.onThumbnail = showThumb;
+$('b-check').onclick = async () => {
+  $('b-check').disabled = true; $('cam-view-label').textContent = 'recording a 3 s test clip…';
+  try { showThumb(await recorder.checkView(), 'view check'); log('view check done (test clip deleted)'); }
+  catch (e) { $('cam-view-label').textContent = 'check failed: ' + e.message; log('view check failed: ' + e.message); }
+  finally { $('b-check').disabled = false; render(); }
+};
 
 // ---------- wake lock ----------
 let wakeLock = null;
@@ -241,6 +259,7 @@ function render() {
   show('b-stop', wantRunning);
   $('b-start').textContent = lastStatus.halted ? 'Retry start' : 'Start recording';
   $('b-apply').disabled = !camera || wantRunning;
+  $('b-check').hidden = !camera || wantRunning;
 }
 
 // ---------- session charts: battery + storage samples every 30 s, last 2 h (persisted) ----------
@@ -283,8 +302,8 @@ async function exportData() {
   const gpx = `<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="theta-recorder" xmlns="http://www.topografix.com/GPX/1/1"><trk><trkseg>\n` +
     fixes.map((f) => `<trkpt lat="${f.lat}" lon="${f.lon}"><time>${new Date(f.t).toISOString()}</time>${f.alt != null ? `<ele>${f.alt}</ele>` : ''}</trkpt>`).join('\n') +
     `\n</trkseg></trk></gpx>\n`;
-  download(`track-${stamp}.gpx`, gpx, 'application/gpx+xml');
-  download(`events-${stamp}.json`, JSON.stringify({ fixes, events }, null, 1), 'application/json');
+  download(`theta-recorder-gps-${stamp}.gpx`, gpx, 'application/gpx+xml');
+  download(`theta-recorder-data-${stamp}.json`, JSON.stringify({ fixes, events }, null, 1), 'application/json');
   log(`exported ${fixes.length} fixes, ${events.length} events`);
 }
 function download(name, text, type) {

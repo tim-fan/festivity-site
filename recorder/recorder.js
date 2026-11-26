@@ -134,6 +134,11 @@ export class Recorder {
       }
       this._endClip(reason);
       this.onEvent({ type: 'rollover', reason, stopMs: Date.now() - t0 });
+      // While stopped (car stationary), grab the finished clip's thumbnail for the "camera view" panel.
+      if (this.onThumbnail) {
+        try { const h = await this.camera.newestObject(); if (h) this.onThumbnail(await this.camera.thumbnail(h), 'end of clip ' + this.clip); }
+        catch (e) { this.log('thumbnail skipped: ' + e.message); }
+      }
       await this._startClip();
       return true;
     } catch (e) {
@@ -142,6 +147,20 @@ export class Recorder {
     } finally {
       this.busy = false;
     }
+  }
+
+  // Pre-drive check: record ~3 s, return its thumbnail, delete the test clip.
+  async checkView() {
+    if (this.running || !this.camera) throw new Error('stop recording first');
+    const c = this.camera;
+    await c.startRecording();
+    await new Promise((r) => setTimeout(r, 3000));
+    await c.stopRecording();
+    for (let i = 0; i < 40; i++) { if ((await c.getProp(PROP.CaptureStatus)) === 0) break; await new Promise((r) => setTimeout(r, 100)); }
+    const h = await c.newestObject();
+    const jpg = await c.thumbnail(h);
+    await c.deleteObject(h);
+    return jpg;
   }
 
   async stop() {

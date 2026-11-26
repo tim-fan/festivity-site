@@ -192,6 +192,22 @@ export class PtpCamera {
     return Number(iv.getBigUint64(14, true));
   }
 
+  // Newest object handle on the camera (only works while not recording).
+  async newestObject() {
+    const h = await this.transaction(0x1007, [0xffffffff, 0, 0]);
+    const dv = new DataView(h.data.buffer, h.data.byteOffset, h.data.byteLength);
+    const n = dv.getUint32(0, true);
+    return n ? dv.getUint32(4 + 4 * (n - 1), true) : null;
+  }
+
+  // JPEG thumbnail (Blob) of an object; the Z1 gives a 640x320 dual-fisheye frame for videos.
+  async thumbnail(handle) {
+    const r = await this.transaction(0x100a, [handle], null, false, 15000);
+    return new Blob([r.data], { type: 'image/jpeg' });
+  }
+
+  deleteObject(handle) { return this.transaction(0x100b, [handle, 0]); }
+
   startRecording() { return this.transaction(OP.InitiateOpenCapture, [0, 0]); }
   stopRecording() { return this.transaction(OP.TerminateOpenCapture, [0xffffffff]); }
 }

@@ -1,5 +1,5 @@
 // Offline support: serve the app shell from cache, refresh it in the background when online.
-const CACHE = 'theta-recorder-v5';
+const CACHE = 'theta-recorder-v6';
 const SHELL = ['./', 'index.html', 'app.js', 'ptp.js', 'recorder.js', 'charts.js', 'manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png'];
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting()));
