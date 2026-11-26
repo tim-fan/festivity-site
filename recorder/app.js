@@ -5,7 +5,7 @@ import { renderCharts } from './charts.js';
 
 const $ = (id) => document.getElementById(id);
 const SETTINGS_KEY = 'theta-settings';
-const APP_VERSION = '2026-11-26.4';
+const APP_VERSION = '2026-11-26.5';
 const qsTelemetry = new URLSearchParams(location.search).get('telemetry');
 if (qsTelemetry !== null) localStorage.setItem('theta-telemetry', qsTelemetry); // ?telemetry= (empty) turns it off
 const TELEMETRY = location.hostname === 'localhost' ? '/api/log' : (localStorage.getItem('theta-telemetry') || null);
@@ -234,8 +234,12 @@ function render() {
   } else $('t-store').textContent = '–';
   $('t-gps').textContent = lastFix ? `±${Math.round(lastFix.acc)} m, ${Math.round((Date.now() - lastFix.t) / 1000)} s` : 'no fix';
   $('t-sess').textContent = sessionStart ? fmtDur((Date.now() - sessionStart) / 1000) : '–';
-  $('b-start').disabled = !camera || (wantRunning && !lastStatus.halted);
-  $('b-stop').disabled = !wantRunning;
+  // One primary action at a time: Connect -> Start -> Stop (state lives in the banner).
+  const show = (id, on) => { $(id).hidden = !on; };
+  show('b-connect', !camera);
+  show('b-start', !!camera && (!wantRunning || !!lastStatus.halted));
+  show('b-stop', wantRunning);
+  $('b-start').textContent = lastStatus.halted ? 'Retry start' : 'Start recording';
   $('b-apply').disabled = !camera || wantRunning;
 }
 

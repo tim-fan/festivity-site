@@ -22,9 +22,12 @@
   .tile .v { font-size: 22px; font-weight: 600; }
   .row { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 8px 8px; }
   button { font-size: 18px; padding: 12px 14px; border-radius: 8px; border: 0; background: #2d5bd7; color: #fff; }
+  button.go { background: #0a7d32; }
   button.stop { background: #b00020; }
+  button[hidden] { display: none; }
+  #b-connect, #b-start, #b-stop { min-width: 220px; font-weight: 600; }
   button.sec { background: #333; }
-  button:disabled { opacity: .4; }
+  button:disabled { background: #2a2a2a; color: #777; }
   details { margin: 0 8px 8px; background: #1a1a1a; border-radius: 8px; padding: 8px; }
   label { display: inline-block; margin: 4px 10px 4px 0; }
   select, input { font-size: 16px; }
@@ -49,8 +52,8 @@
 </div>
 <div class="row">
   <button id="b-connect">Connect camera</button>
-  <button id="b-start" disabled>Start</button>
-  <button id="b-stop" class="stop" disabled>Stop</button>
+  <button id="b-start" class="go" hidden>Start recording</button>
+  <button id="b-stop" class="stop" hidden>Stop</button>
   <button id="b-export" class="sec">Export data</button>
 </div>
 <div class="charts">
