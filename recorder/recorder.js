@@ -95,6 +95,11 @@ export class Recorder {
     catch (e) { this.log('storage info unavailable: ' + e.message); }
   }
 
+  // Poll camera status even when not recording, so battery/storage show before a session.
+  watch() {
+    if (!this.timer) this.timer = setInterval(() => this._poll(), 1000);
+  }
+
   async start() {
     if (this.running) return;
     this.running = true;
@@ -103,7 +108,7 @@ export class Recorder {
     this.log('recording session started');
     this.onEvent({ type: 'session_start' });
     await this._startClip();
-    this.timer = setInterval(() => this._poll(), 1000);
+    this.watch();
   }
 
   // Stop the polling loop without touching the camera (used when the USB link drops).
@@ -141,9 +146,7 @@ export class Recorder {
 
   async stop() {
     this.running = false;
-    clearInterval(this.timer);
-    this.timer = null;
-    if (!this.camera) return;
+    if (!this.camera) { clearInterval(this.timer); this.timer = null; return; }
     try {
       if ((await this.camera.getProp(PROP.CaptureStatus)) === 1) await this.camera.stopRecording();
     } catch (e) { this.log('stop error: ' + e.message); }
