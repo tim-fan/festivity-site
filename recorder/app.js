@@ -5,7 +5,7 @@ import { renderCharts } from './charts.js';
 
 const $ = (id) => document.getElementById(id);
 const SETTINGS_KEY = 'theta-settings';
-const APP_VERSION = '2026-11-26.8';
+const APP_VERSION = '2026-11-26.9';
 const qsTelemetry = new URLSearchParams(location.search).get('telemetry');
 if (qsTelemetry !== null) localStorage.setItem('theta-telemetry', qsTelemetry); // ?telemetry= (empty) turns it off
 const TELEMETRY = location.hostname === 'localhost' ? '/api/log' : (localStorage.getItem('theta-telemetry') || null);
@@ -65,13 +65,12 @@ function initSettingsUI() {
   $('s-iso').innerHTML = isos.map((v) => `<option>${v}</option>`).join('');
   $('s-shutter').innerHTML = shutters.map((v) => `<option>${v}</option>`).join('');
   const s = loadSettings();
-  $('s-exposure').value = s.exposure; $('s-iso').value = s.iso; $('s-shutter').value = s.shutterDen;
-  $('s-f').value = s.fNumber; $('s-clip').value = s.maxClipSeconds; $('s-size').value = s.imageSize;
+  $('s-exposure').value = s.exposure; $('s-iso').value = s.iso; $('s-shutter').value = s.shutterDen; $('s-clip').value = s.maxClipSeconds; $('s-size').value = s.imageSize;
 }
 function readSettingsUI() {
   const s = {
     exposure: $('s-exposure').value, iso: +$('s-iso').value, shutterDen: +$('s-shutter').value,
-    fNumber: +$('s-f').value, maxClipSeconds: +$('s-clip').value, imageSize: $('s-size').value,
+    fNumber: 210, maxClipSeconds: +$('s-clip').value, imageSize: $('s-size').value,
   };
   localStorage.setItem(SETTINGS_KEY, JSON.stringify(s));
   return s;
@@ -182,7 +181,7 @@ function showThumb(blob, label) {
   if (img.dataset.url) URL.revokeObjectURL(img.dataset.url);
   img.dataset.url = URL.createObjectURL(blob);
   img.src = img.dataset.url; img.hidden = false;
-  $('cam-view-label').textContent = `${label} · ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+  $('cam-view-label').textContent = `— ${label} · ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
 }
 recorder.onThumbnail = showThumb;
 $('b-check').onclick = async () => {

@@ -9,7 +9,7 @@ export const DEFAULT_SETTINGS = {
   exposure: 'manual', // 'manual' | 'auto'
   iso: 1600,
   shutterDen: 160, // 1/160 s
-  fNumber: 210, // f/2.1
+  fNumber: 210, // f/2.1 always: widest aperture, most light; no depth-of-field cost at house distances
   beepVolume: 0, // camera beeps on clip start/stop; silence them
   setClock: false, // camera clock setting disabled until verified safe (suspect in a camera hang)
 };

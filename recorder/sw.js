@@ -1,5 +1,5 @@
 // Offline support: serve the app shell from cache, refresh it in the background when online.
-const CACHE = 'theta-recorder-v8';
+const CACHE = 'theta-recorder-v9';
 const SHELL = ['./', 'index.html', 'app.js', 'ptp.js', 'recorder.js', 'charts.js', 'manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png'];
 self.addEventListener('install', (e) => {
   // cache: 'reload' bypasses the browser HTTP cache so an update never caches a stale file
