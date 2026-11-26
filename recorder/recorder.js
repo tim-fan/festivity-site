@@ -91,8 +91,8 @@ export class Recorder {
   }
 
   async refreshStorage() {
-    try { this.status.freeBytes = await this.camera.storageFreeBytes(); this.status.freeAt = Date.now(); }
-    catch (e) { this.log('storage info unavailable: ' + e.message); }
+    try { this.status.freeBytes = await this.camera.storageFreeBytes(); this.status.freeAt = Date.now(); this.storageFails = 0; }
+    catch (e) { if (!this.storageFails++) this.log('storage info unavailable (will estimate): ' + e.message); }
   }
 
   // Poll camera status even when not recording, so battery/storage show before a session.
@@ -222,7 +222,7 @@ export class Recorder {
         this.status.battery = await this.camera.getProp(PROP.BatteryLevel);
         this.status.clipRemainingSec = await this.camera.getProp(PROP.RemainingRecordingTime);
         this.status.lastSlow = now;
-        if (st === 0 && !this.running && (!this.status.freeAt || now - this.status.freeAt > 60000)) await this.refreshStorage();
+        if (!this.status.freeAt || now - this.status.freeAt > 60000) await this.refreshStorage(); // may fail while recording
       }
       // Stall detection: recording, but the clip timer isn't advancing.
       if (st !== 1 || recSec !== this.status.recSec) this.lastRecChange = now;

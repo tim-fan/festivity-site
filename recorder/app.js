@@ -1,10 +1,11 @@
 // Theta Recorder UI: WebUSB camera control, GPS logging, storage, telemetry, alarms.
 import { PtpCamera, RICOH_VENDOR_ID, PROP } from './ptp.js';
 import { Recorder, DEFAULT_SETTINGS } from './recorder.js';
+import { renderCharts } from './charts.js';
 
 const $ = (id) => document.getElementById(id);
 const SETTINGS_KEY = 'theta-settings';
-const APP_VERSION = '2026-11-26.2';
+const APP_VERSION = '2026-11-26.3';
 const qsTelemetry = new URLSearchParams(location.search).get('telemetry');
 if (qsTelemetry !== null) localStorage.setItem('theta-telemetry', qsTelemetry); // ?telemetry= (empty) turns it off
 const TELEMETRY = location.hostname === 'localhost' ? '/api/log' : (localStorage.getItem('theta-telemetry') || null);
@@ -232,6 +233,41 @@ function render() {
   $('b-stop').disabled = !wantRunning;
   $('b-apply').disabled = !camera || wantRunning;
 }
+
+// ---------- session charts: battery + storage samples every 30 s, last 2 h (persisted) ----------
+const SAMPLES_KEY = 'theta-samples';
+let samples = [];
+try { samples = JSON.parse(localStorage.getItem(SAMPLES_KEY) || '[]'); } catch { samples = []; }
+let tabletBattery = null;
+navigator.getBattery?.().then((b) => { tabletBattery = b; }).catch(() => {});
+function freeBytesNow() {
+  const s = lastStatus;
+  if (s.freeBytes == null || !s.freeAt) return [null, false];
+  const age = (Date.now() - s.freeAt) / 1000;
+  if (wantRunning && lastStatus.captureStatus === 1 && age > 70) // stale reading while recording: estimate
+    return [Math.max(0, s.freeBytes - age * bytesPerSec($('s-size').value)), true];
+  return [s.freeBytes, false];
+}
+function takeSample() {
+  const [free, est] = freeBytesNow();
+  const s = {
+    t: Date.now(),
+    cam: camera && lastStatus.battery != null ? lastStatus.battery : null,
+    tab: tabletBattery ? Math.round(tabletBattery.level * 100) : null,
+    tabCharging: tabletBattery ? tabletBattery.charging : null,
+    freeH: camera && free != null ? free / bytesPerSec($('s-size').value) / 3600 : null,
+    freeEst: est || undefined,
+  };
+  samples.push(s);
+  samples = samples.filter((x) => x.t > Date.now() - 2 * 3600e3);
+  localStorage.setItem(SAMPLES_KEY, JSON.stringify(samples));
+  drawCharts();
+}
+function drawCharts() {
+  try { renderCharts(samples, bytesPerSec($('s-size').value)); } catch (e) { console.warn('charts', e); }
+}
+setTimeout(takeSample, 3000);
+setInterval(takeSample, 30000);
 
 // ---------- export ----------
 async function exportData() {
