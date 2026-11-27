@@ -3,12 +3,13 @@
 import { PROP, OP, MODE_VIDEO, MODE_LIVE, shutter, shutterToString, ptpDateTime } from './ptp.js';
 const fmt = (c) => (typeof c === 'number' ? '0x' + c.toString(16) : String(c));
 
+export const LOW_FPS_SIZES = ['2688x2688', '3648x3648'];
 export const DEFAULT_SETTINGS = {
-  imageSize: '1920x960',
-  maxClipSeconds: 1500, // 300 or 1500
+  imageSize: '2688x2688', // 2.7K per lens at 2 fps (two files per clip); '1920x960' 2K30, '3840x1920' 4K30, '3648x3648' 3.6K 2 fps
+  maxClipSeconds: 3000, // 3000 only in the 2 fps modes; 30 fps modes are capped to 1500 automatically
   exposure: 'manual', // 'manual' | 'auto'
-  iso: 1600,
-  shutterDen: 160, // 1/160 s
+  iso: 2000,
+  shutterDen: 125, // 1/125 s: sharp at 15-25 mph; lights measured at ISO 1600 1/160 were well exposed, this is ~2/3 stop brighter
   fNumber: 210, // f/2.1 always: widest aperture, most light; no depth-of-field cost at house distances
   beepVolume: 0, // camera beeps on clip start/stop; silence them
   setClock: false, // camera clock setting disabled until verified safe (suspect in a camera hang)
@@ -72,8 +73,10 @@ export class Recorder {
     await set('SleepDelay', PROP.SleepDelay, 0);
     await set('AutoPowerOffDelaySec', PROP.AutoPowerOffDelaySec, 0);
     await set('ImageSize', PROP.ImageSize, s.imageSize);
-    await set('MaxRecordableTime', PROP.MaxRecordableTime, s.maxClipSeconds);
-    this.maxClip = s.maxClipSeconds;
+    this.filesPerClip = LOW_FPS_SIZES.includes(s.imageSize) ? 2 : 1; // 2 fps modes: one file per lens, the 2nd appears seconds later
+    const clip = LOW_FPS_SIZES.includes(s.imageSize) ? s.maxClipSeconds : Math.min(s.maxClipSeconds, 1500);
+    await set('MaxRecordableTime', PROP.MaxRecordableTime, clip);
+    this.maxClip = clip;
     if (s.exposure === 'manual') {
       await set('ExposureProgram', PROP.ExposureProgram, 1);
       await set('ExposureIndex', PROP.ExposureIndex, s.iso);
@@ -105,6 +108,14 @@ export class Recorder {
     this.running = true;
     this.halted = null;
     this.startFailures = 0;
+    // Resumed without configure() (reload / reconnect mid-clip): learn clip length and files-per-clip from the camera.
+    if (this.maxClip == null || this.filesPerClip == null) {
+      try {
+        const size = await this.camera.getProp(PROP.ImageSize);
+        this.filesPerClip = LOW_FPS_SIZES.includes(size) ? 2 : 1;
+        this.maxClip = await this.camera.getProp(PROP.MaxRecordableTime);
+      } catch (e) { this.log('could not read clip settings: ' + e.message); }
+    }
     this.log('recording session started');
     this.onEvent({ type: 'session_start' });
     await this._startClip();
@@ -137,8 +148,8 @@ export class Recorder {
       // While stopped (car stationary), grab the finished clip's thumbnail for the "camera view" panel.
       if (this.onThumbnail) {
         try {
-          const h = this.handlesBeforeClip ? await this.camera.waitForNewObject(this.handlesBeforeClip, 3000) : null;
-          if (h) this.onThumbnail(await this.camera.thumbnail(h), 'end of clip ' + this.clip);
+          const hs = this.handlesBeforeClip ? await this.camera.waitForNewObjects(this.handlesBeforeClip, 6000, 300, this.filesPerClip || 1) : [];
+          if (hs.length) this.onThumbnail(await Promise.all(hs.map((h) => this.camera.thumbnail(h))), 'end of clip ' + this.clip);
           else this.log('thumbnail skipped: finished clip not listed yet');
         } catch (e) { this.log('thumbnail skipped: ' + e.message); }
       }
@@ -158,14 +169,15 @@ export class Recorder {
     const c = this.camera;
     const before = await c.objectHandles();
     await c.startRecording();
-    await new Promise((r) => setTimeout(r, 3000));
+    await new Promise((r) => setTimeout(r, 4000));
     await c.stopRecording();
     for (let i = 0; i < 40; i++) { if ((await c.getProp(PROP.CaptureStatus)) === 0) break; await new Promise((r) => setTimeout(r, 100)); }
-    const h = await c.waitForNewObject(before);
-    if (h == null) throw new Error('test clip did not appear on the camera; nothing deleted');
-    const jpg = await c.thumbnail(h);
-    await c.deleteObject(h); // only ever the clip this check just recorded
-    return jpg;
+    const hs = await c.waitForNewObjects(before, 15000, 500, this.filesPerClip || 1);
+    if (!hs.length) throw new Error('test clip did not appear on the camera; nothing deleted');
+    const jpgs = [];
+    for (const h of hs) jpgs.push(await c.thumbnail(h));
+    for (const h of hs) await c.deleteObject(h); // only ever the file(s) this check just recorded
+    return jpgs;
   }
 
   async stop() {

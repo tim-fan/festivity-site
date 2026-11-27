@@ -201,6 +201,22 @@ export class PtpCamera {
     return out;
   }
 
+  // Wait for all new handles (2 fps modes write two files per clip, one per lens): returns once at least one
+  // has appeared and the set has stayed the same for settleMs. Empty array if nothing appears. Never guesses.
+  async waitForNewObjects(before, timeoutMs = 8000, settleMs = 1200, expected = 1) {
+    const known = new Set(before), t0 = Date.now();
+    let fresh = [], since = null;
+    while (Date.now() - t0 < timeoutMs) {
+      try {
+        const now = (await this.objectHandles()).filter((h) => !known.has(h));
+        if (now.length !== fresh.length) { fresh = now; since = Date.now(); }
+        if (fresh.length >= expected && Date.now() - since >= settleMs) return fresh.sort((a, b) => a - b);
+      } catch (e) { /* busy while finalising: retry */ }
+      await new Promise((r) => setTimeout(r, 250));
+    }
+    return fresh.sort((a, b) => a - b);
+  }
+
   // Wait until a handle not in `before` appears (a just-finished clip can take a moment to be listed).
   // Returns it, or null if nothing new shows up within timeoutMs. Never guesses.
   async waitForNewObject(before, timeoutMs = 8000) {
@@ -224,7 +240,16 @@ export class PtpCamera {
   deleteObject(handle) { return this.transaction(0x100b, [handle, 0]); }
 
   startRecording() { return this.transaction(OP.InitiateOpenCapture, [0, 0]); }
-  stopRecording() { return this.transaction(OP.TerminateOpenCapture, [0xffffffff]); }
+  // The 2 fps modes can answer DeviceBusy for a few seconds after starting: retry rather than fail.
+  async stopRecording(timeoutMs = 10000) {
+    const t0 = Date.now();
+    for (;;) {
+      const r = await this.transaction(OP.TerminateOpenCapture, [0xffffffff], null, true);
+      if (r.code === RC.OK) return r;
+      if (r.code !== RC.DeviceBusy || Date.now() - t0 > timeoutMs) throw new PtpError(OP.TerminateOpenCapture, r.code);
+      await new Promise((res) => setTimeout(res, 500));
+    }
+  }
 }
 
 function withTimeout(p, ms, msg) {

@@ -1,11 +1,11 @@
 // Theta Recorder UI: WebUSB camera control, GPS logging, storage, telemetry, alarms.
 import { PtpCamera, RICOH_VENDOR_ID, PROP } from './ptp.js';
-import { Recorder, DEFAULT_SETTINGS } from './recorder.js';
+import { Recorder, DEFAULT_SETTINGS, LOW_FPS_SIZES } from './recorder.js';
 import { renderCharts } from './charts.js';
 
 const $ = (id) => document.getElementById(id);
 const SETTINGS_KEY = 'theta-settings';
-const APP_VERSION = '2026-11-27.1';
+const APP_VERSION = '2026-11-27.3';
 const qsTelemetry = new URLSearchParams(location.search).get('telemetry');
 if (qsTelemetry !== null) localStorage.setItem('theta-telemetry', qsTelemetry); // ?telemetry= (empty) turns it off
 const TELEMETRY = location.hostname === 'localhost' ? '/api/log' : (localStorage.getItem('theta-telemetry') || null);
@@ -55,7 +55,11 @@ function event(e) {
 }
 
 // ---------- settings ----------
+const SETTINGS_VERSION = 2; // bump to make every device adopt new defaults once
 function loadSettings() {
+  if (localStorage.getItem('theta-settings-version') !== String(SETTINGS_VERSION)) {
+    localStorage.removeItem(SETTINGS_KEY); localStorage.setItem('theta-settings-version', String(SETTINGS_VERSION));
+  }
   try { return { ...DEFAULT_SETTINGS, ...JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}') }; }
   catch { return { ...DEFAULT_SETTINGS }; }
 }
@@ -160,14 +164,14 @@ function startGps() {
 
 // ---------- planned rollover while stationary ----------
 // Uses GPS-reported speed (Doppler-based, far steadier than position changes).
-const ROLLOVER_AFTER_SEC = 900; // from 15 min into a clip...
+const rolloverAfterSec = () => Math.round((recorder.maxClip || 1500) * 0.6); // from 60% into a clip (15 of 25 min, 30 of 50)...
 let stoppedSince = null;
 setInterval(async () => {
   const fresh = lastFix && Date.now() - lastFix.t < 2500;
   const slow = fresh && lastFix.spd != null && lastFix.spd < 0.5 && lastFix.acc != null && lastFix.acc < 30;
   stoppedSince = slow ? (stoppedSince ?? Date.now()) : null;
   // ...roll over at the first moment the car has been stopped for 3 s.
-  if (wantRunning && recorder.running && lastStatus.captureStatus === 1 && lastStatus.recSec >= ROLLOVER_AFTER_SEC &&
+  if (wantRunning && recorder.running && lastStatus.captureStatus === 1 && lastStatus.recSec >= rolloverAfterSec() &&
       stoppedSince && Date.now() - stoppedSince > 3000) {
     log(`car stopped at clip time ${lastStatus.recSec} s — rolling over to a new clip now`);
     stoppedSince = null;
@@ -203,14 +207,17 @@ function setThumb(src, labelText) {
   img.src = src; img.hidden = false;
   $('cam-view-label').textContent = labelText;
 }
-function showThumb(blob, label) {
+async function showThumb(blobs, label) {
   const labelText = `— ${label} · ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
-  const reader = new FileReader(); // keep it as a data URL so it survives reloads (thumbnails are ~30 KB)
-  reader.onload = () => {
-    setThumb(reader.result, labelText);
-    try { localStorage.setItem(THUMB_KEY, JSON.stringify({ src: reader.result, label: labelText })); } catch { /* storage full: show only */ }
-  };
-  reader.readAsDataURL(blob);
+  const list = Array.isArray(blobs) ? blobs : [blobs];
+  const imgs = await Promise.all(list.map((b) => createImageBitmap(b)));
+  const h = 320, ws = imgs.map((im) => Math.round(im.width * h / im.height));
+  const cv = document.createElement('canvas'); cv.width = ws.reduce((a, b) => a + b, 0); cv.height = h;
+  const ctx = cv.getContext('2d'); let x = 0;
+  imgs.forEach((im, i) => { ctx.drawImage(im, x, 0, ws[i], h); x += ws[i]; });
+  const src = cv.toDataURL('image/jpeg', 0.85); // data URL so it survives reloads
+  setThumb(src, labelText);
+  try { localStorage.setItem(THUMB_KEY, JSON.stringify({ src, label: labelText })); } catch { /* storage full: show only */ }
 }
 try { const t = JSON.parse(localStorage.getItem(THUMB_KEY) || 'null'); if (t?.src) setThumb(t.src, t.label); } catch { /* none saved */ }
 recorder.onThumbnail = showThumb;
@@ -262,7 +269,8 @@ setInterval(() => { const a = alarmState(); if (a && (a.level === 'err' || wantR
 // ---------- render ----------
 let sessionStart = wantRunning ? Date.now() : null;
 const fmtDur = (s) => `${Math.floor(s / 3600)}:${String(Math.floor(s / 60) % 60).padStart(2, '0')}:${String(Math.floor(s) % 60).padStart(2, '0')}`;
-const bytesPerSec = (size) => (size === '3840x1920' ? 56e6 : 19.5e6) / 8;
+const BITRATE = { '1920x960': 19.5e6, '3840x1920': 56e6, '2688x2688': 24.6e6, '3648x3648': 41e6 }; // bits/s, measured
+const bytesPerSec = (size) => (BITRATE[size] || 19.5e6) / 8;
 function render() {
   const b = $('banner'), a = alarmState();
   if (a?.level === 'err') { b.className = 'err'; b.textContent = '⚠ ' + a.msg; }
