@@ -192,8 +192,14 @@ export class Recorder {
     // Never send a start while the camera is already recording (that wedged the camera once).
     try {
       if ((await this.camera.getProp(PROP.CaptureStatus)) === 1) {
-        this.log('camera already recording; not sending start');
-        if (this.clipStartedAt == null) { this.clip += 1; this.clipStartedAt = Date.now(); }
+        // Picking up a clip this page didn't start (reconnect / reload mid-clip): log its true start time,
+        // from the camera's own "seconds recorded so far", so the clip can still be synced to GPS precisely.
+        let recSec = null;
+        try { recSec = await this.camera.getProp(PROP.RecordingTime); } catch (e) { /* unknown */ }
+        const now = Date.now();
+        if (this.clipStartedAt == null) { this.clip += 1; this.clipStartedAt = recSec != null ? now - recSec * 1000 : now; }
+        this.onEvent({ type: 'clip_adopted', clip: this.clip, recSecAtAdopt: recSec, estStartMs: recSec != null ? now - recSec * 1000 : null, readAtMs: now });
+        this.log(`camera already recording (${recSec ?? '?'} s in); picked up the running clip without restarting it`);
         return;
       }
     } catch (e) { this.log('status check before start failed: ' + e.message); return; }
