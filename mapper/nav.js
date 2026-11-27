@@ -4,7 +4,7 @@
 // time and the resume pointer are saved (IndexedDB 'light-mapper').
 const $ = (id) => document.getElementById(id);
 const MILE = 1609.34, BIN = 20, COVER_M = 20, RON = 25, ROFF = 35;
-const VERSION = 'mapper-2026-11-27.2';
+const VERSION = 'mapper-2026-11-27.3';
 const Q = new URLSearchParams(location.search);
 
 // ---------- storage ----------
@@ -188,7 +188,7 @@ async function openRoute(entry) {
   }
   S = { entry, pin, demo, model, bins, snap: new Snapper(model, s0), skippedNote: false, lastSave: 0, scrubT: null, zoomMode: 'all', following: true,
         view: null, lastDrawn: -1, dirty: true, speedup: 12, sim: null, offAnnounced: false, prevCov: [] };
-  $('home').hidden = true; $('mapscr').hidden = false; $('demobar').hidden = !demo;
+  $('home').hidden = true; $('mapscr').hidden = false; $('demobar').hidden = !demo; document.body.classList.add('onmap');
   voice.set(voice.on); voice.said.clear();
   setupMap();
   if (demo) startSim(); else window.addEventListener('gpsfix', onGpsFix);
@@ -201,7 +201,7 @@ function closeRoute() {
   window.removeEventListener('gpsfix', onGpsFix);
   if (S?.sim) S.sim.stop = true;
   speechSynthesis?.cancel(); S = null;
-  $('mapscr').hidden = true; $('home').hidden = false; renderHome();
+  $('mapscr').hidden = true; $('home').hidden = false; document.body.classList.remove('onmap'); camTab(false); renderHome();
 }
 function onGpsFix(e) { const f = e.detail; if (!S || S.demo) return; step(f.lat, f.lon, f.hdg, f.spd); }
 function step(lat, lon, hdg, spd) {
@@ -258,7 +258,8 @@ function camera() {
   if (S && S.following && S.snap.snapped && mapReady) {
     const m = S.model, q = S.scrubT != null ? m.ll(...m.pt(S.scrubT)) : m.ll(...S.snap.snapped), hd = S.scrubT != null ? m.brg(S.scrubT) : S.snap.heading, a = .15, v = S.view;
     v.lng += (q[1] - v.lng) * a; v.lat += (q[0] - v.lat) * a; const db = ((hd - v.brg + 540) % 360) - 180; v.brg = (v.brg + db * .08 + 360) % 360;
-    map.jumpTo({ center: [v.lng, v.lat], bearing: v.brg, pitch: 58, zoom: 18.3, padding: { top: innerHeight * .38, bottom: 0, left: 0, right: 0 } });
+    const topY = $('turn').getBoundingClientRect().bottom + 8, botY = $('bottom').getBoundingClientRect().top - 8, avail = Math.max(60, botY - topY);
+    map.jumpTo({ center: [v.lng, v.lat], bearing: v.brg, pitch: 58, zoom: innerHeight < 520 ? 17.6 : 18.3, padding: { top: topY + avail * .45, bottom: innerHeight - botY, left: 0, right: 0 } });
   }
   requestAnimationFrame(camera);
 }
@@ -373,7 +374,9 @@ $('b-menu').onclick = async () => {
   }
 };
 const drawer = $('drawer');
-$('b-drawer-home').onclick = () => drawer.classList.add('open'); $('recpill').onclick = () => drawer.classList.add('open'); $('b-drawer-close').onclick = () => drawer.classList.remove('open');
+function camTab(open) { drawer.classList.toggle('open', open); $('tab-cam').classList.toggle('on', open); $('tab-map').classList.toggle('on', !open); }
+$('tab-cam').onclick = () => camTab(true); $('tab-map').onclick = () => camTab(false);
+$('b-drawer-home').onclick = () => camTab(true); $('recpill').onclick = () => camTab(true); $('b-drawer-close').onclick = () => camTab(false);
 $('b-import').onclick = () => $('import-file').click();
 $('import-file').onchange = async (e) => {
   const file = e.target.files[0]; if (!file) return; e.target.value = '';

@@ -7,7 +7,7 @@ import { renderCharts } from './charts.js';
 
 const $ = (id) => document.getElementById(id);
 const SETTINGS_KEY = 'theta-settings';
-const APP_VERSION = 'mapper-2026-11-27.2';
+const APP_VERSION = 'mapper-2026-11-27.3';
 const qsTelemetry = new URLSearchParams(location.search).get('telemetry');
 if (qsTelemetry !== null) localStorage.setItem('theta-telemetry', qsTelemetry); // ?telemetry= (empty) turns it off
 const TELEMETRY = location.hostname === 'localhost' ? '/api/log' : (localStorage.getItem('theta-telemetry') || null);
@@ -290,6 +290,7 @@ function render() {
   else if (camera) { b.className = 'warn'; b.textContent = 'CONNECTED – NOT RECORDING'; }
   else { b.className = 'warn'; b.textContent = 'CAMERA NOT CONNECTED'; }
   const pill = $('recpill'); if (pill) { pill.className = b.className; pill.textContent = b.textContent; }
+  const tc = $('tab-cam'); if (tc) { tc.dataset.st = b.className; tc.title = b.textContent; }
   $('t-clip').textContent = recorder.clip || '–';
   $('t-rec').textContent = lastStatus.recSec != null ? fmtDur(lastStatus.recSec) : '–';
   $('t-batt').textContent = camera && lastStatus.battery != null ? lastStatus.battery + '%' : '–';
