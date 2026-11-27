@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Light Mapper</title>
+<link rel="icon" href="icons/icon-192.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#111111">
+<link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet">
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; overflow: hidden; }
+  body { font-family: system-ui, -apple-system, Roboto, sans-serif; background: #111; color: #eee; }
+  button { font: 600 15px system-ui; padding: 10px 14px; border-radius: 10px; border: 0; background: #2d5bd7; color: #fff; cursor: pointer; }
+  button.sec { background: #3a3f47; } button.go { background: #0a7d32; } button.stop, button.warn { background: #b00020; }
+  button[hidden] { display: none; } button:disabled { background: #2a2a2a; color: #777; }
+
+  /* ---------- home ---------- */
+  #home { position: absolute; inset: 0; overflow: auto; padding: 18px 18px 80px; }
+  #home h1 { margin: 0 0 4px; font-size: 26px; }
+  #home .sub { color: #aaa; margin-bottom: 16px; }
+  #home .bar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 16px; }
+  .switch { display: inline-flex; gap: 8px; align-items: center; background: #23262d; padding: 8px 12px; border-radius: 10px; font-weight: 600; }
+  .switch input { width: 20px; height: 20px; }
+  #cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
+  .rcard { background: #1d2026; border: 1px solid #2e333c; border-radius: 16px; overflow: hidden; cursor: pointer; }
+  .rcard svg { display: block; width: 100%; height: 150px; background: #f2efe9; }
+  .rcard .body { padding: 10px 14px 14px; }
+  .rcard .name { font-size: 17px; font-weight: 700; } .rcard .meta { color: #aaa; font-size: 13px; margin-top: 2px; }
+  .rcard .prog { height: 8px; background: #3a3f47; border-radius: 4px; margin-top: 10px; overflow: hidden; } .rcard .prog div { height: 100%; background: #40c057; }
+  .rcard .pct { font-size: 13px; margin-top: 4px; } .rcard .tag { display: inline-block; font-size: 11px; background: #3a3f47; border-radius: 6px; padding: 1px 6px; margin-left: 6px; vertical-align: middle; }
+  .rcard .newer { color: #ffd43b; font-size: 12px; margin-top: 4px; }
+
+  /* ---------- mapping screen ---------- */
+  #mapscr { position: absolute; inset: 0; }
+  #map { position: absolute; inset: 0; }
+  #turn { position: absolute; z-index: 5; top: 12px; left: 12px; width: 440px; max-width: calc(100% - 24px); background: #1b5e20; color: #fff; border-radius: 14px; box-shadow: 0 4px 16px #0008; overflow: hidden; }
+  #turn .main { display: flex; align-items: center; gap: 14px; padding: 12px 16px; }
+  #turn svg { width: 56px; height: 56px; flex: none; }
+  #turn .dist { font-size: 30px; font-weight: 700; line-height: 1; }
+  #turn .txt { font-size: 18px; margin-top: 4px; line-height: 1.2; }
+  #turn .then { background: #14451a; padding: 6px 16px; font-size: 14px; color: #cfe8d0; }
+  #turn.off { background: #b71c1c; } #turn.off .then { background: #7f1414; color: #ffd7d7; }
+  #turn.preview { background: #37474f; } #turn.preview .then { background: #263238; }
+  #topright { position: absolute; z-index: 6; top: 12px; right: 12px; display: flex; flex-direction: column; gap: 8px; align-items: flex-end; }
+  #recpill { font: 700 14px system-ui; padding: 8px 12px; border-radius: 10px; background: #444; color: #fff; box-shadow: 0 2px 10px #0008; cursor: pointer; max-width: 260px; text-align: right; }
+  #recpill.rec { background: #0a6b2a; } #recpill.err { background: #b00020; animation: blink 1s infinite; } #recpill.warn { background: #8a5a00; }
+  .tbtn { background: rgba(20,20,24,.9); box-shadow: 0 2px 10px #0008; }
+  #bottom { position: absolute; z-index: 5; left: 12px; right: 12px; bottom: 12px; }
+  #cardsrow { display: flex; gap: 8px; margin-bottom: 8px; }
+  .card { flex: 1; background: rgba(20,20,24,.9); color: #fff; border-radius: 12px; padding: 8px 12px; box-shadow: 0 2px 10px #0008; min-width: 0; }
+  .big { font-size: 21px; font-weight: 700; } .small { font-size: 12px; color: #bbb; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #tl { background: rgba(20,20,24,.92); border-radius: 12px; padding: 8px 10px; box-shadow: 0 2px 10px #0008; }
+  #tlrow { display: flex; gap: 6px; align-items: center; margin-bottom: 4px; white-space: nowrap; }
+  #tlrow button { font-size: 13px; padding: 6px 10px; border-radius: 8px; background: #3a3f47; }
+  #tlrow button.on { background: #ffb300; color: #222; } #tlrow .act { background: #1971c2; } #tlrow .warn { background: #c92a2a; }
+  #tlrow .hid { visibility: hidden; } #tlrow .sp { flex: 1; }
+  #tlinfo { height: 18px; line-height: 18px; font-size: 13px; color: #ccc; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 4px; }
+  canvas#bar { width: 100%; height: 44px; display: block; border-radius: 6px; touch-action: none; cursor: pointer; }
+  #recenter { position: absolute; z-index: 6; right: 12px; bottom: 210px; font-size: 16px; padding: 12px 18px; border-radius: 24px; background: #1971c2; box-shadow: 0 2px 10px #0008; }
+  #demobar[hidden] { display: none; }
+  #demobar { position: absolute; z-index: 6; left: 12px; top: 150px; background: rgba(0,0,0,.65); color: #fff; border-radius: 10px; padding: 6px 8px; display: flex; gap: 6px; align-items: center; font-size: 13px; }
+  #demobar button { font-size: 12px; padding: 5px 9px; background: #3a3f47; } #demobar button.on { background: #ffb300; color: #222; }
+  .car { width: 48px; height: 48px; }
+
+  /* ---------- drawer (recorder) ---------- */
+  #drawer { position: absolute; z-index: 20; top: 0; right: 0; bottom: 0; width: 430px; max-width: 100%; background: #111; box-shadow: -6px 0 24px #000a; transform: translateX(105%); transition: transform .2s; overflow-y: auto; }
+  #drawer.open { transform: none; }
+  #drawer .dhead { position: sticky; top: 0; z-index: 2; display: flex; align-items: center; gap: 8px; padding: 8px; background: #111; border-bottom: 1px solid #2a2a2a; }
+  #drawer .dhead b { flex: 1; font-size: 16px; }
+  #banner { padding: 12px; font-size: 22px; font-weight: 700; text-align: center; background: #444; }
+  #banner.rec { background: #0a6b2a; } #banner.err { background: #b00020; animation: blink 1s infinite; } #banner.warn { background: #8a5a00; }
+  @keyframes blink { 50% { opacity: .55; } }
+  #drawer .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; padding: 8px; }
+  .tile { background: #222; border-radius: 8px; padding: 8px; } .tile .k { font-size: 12px; color: #aaa; } .tile .v { font-size: 20px; font-weight: 600; }
+  #drawer .row { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 8px 8px; }
+  #b-connect, #b-start, #b-stop { flex: 1; min-width: 180px; font-size: 17px; padding: 12px; }
+  #drawer .charts { display: grid; grid-template-columns: 1fr; gap: 8px; padding: 0 8px 8px; }
+  .chart { background: #1b1b1b; border-radius: 8px; padding: 8px; } .ctitle { font-size: 13px; color: #aaa; } .csum { font-size: 14px; margin: 2px 0 4px; line-height: 1.4; }
+  .chart svg { width: 100%; height: auto; display: block; touch-action: pan-y; }
+  .camview { margin: 0 8px 8px; } .camview img[hidden] { display: none; } .camview img { width: 100%; display: block; margin-top: 6px; border-radius: 6px; }
+  details { margin: 0 8px 8px; background: #1a1a1a; border-radius: 8px; padding: 8px; } label { display: inline-block; margin: 4px 10px 4px 0; } select, input { font-size: 15px; }
+  #log { font: 11px ui-monospace, monospace; white-space: pre-wrap; margin: 0 8px 12px; max-height: 30vh; overflow: auto; background: #000; padding: 6px; border-radius: 6px; }
+  #mount-check { position: fixed; inset: 0; background: rgba(0,0,0,.35); display: flex; align-items: flex-start; justify-content: center; padding-top: 18vh; z-index: 30; }
+  #mount-check[hidden] { display: none; }
+  .mc-card { background: #23262d; border: 1px solid #3a3f4b; border-radius: 14px; padding: 18px 20px; max-width: 520px; box-shadow: 0 6px 24px rgba(0,0,0,.5); }
+  .mc-title { font-size: 20px; font-weight: 600; margin-bottom: 6px; } .mc-body { font-size: 16px; color: #c8ccd4; line-height: 1.45; margin-bottom: 14px; }
+  #modal { position: fixed; inset: 0; z-index: 40; background: rgba(0,0,0,.5); display: flex; align-items: center; justify-content: center; }
+  #modal[hidden] { display: none; }
+  #modal .box { background: #23262d; border-radius: 14px; padding: 18px; max-width: 460px; margin: 16px; }
+  #modal .box h3 { margin: 0 0 8px; } #modal .box p { color: #c8ccd4; line-height: 1.45; }
+  #modal .btns { display: flex; gap: 8px; justify-content: flex-end; margin-top: 12px; }
+  @media (max-width: 760px) {
+    #turn .dist { font-size: 24px; } #turn .txt { font-size: 15px; } #turn svg { width: 44px; height: 44px; }
+    #turn { top: 60px; } #bottom { left: 8px; right: 8px; bottom: 8px; } .big { font-size: 16px; } .small { font-size: 10px; } .card { padding: 6px 8px; }
+    #tlrow .lbl { display: none; } #tlrow button { padding: 6px 8px; font-size: 12px; } #recenter { bottom: 262px; font-size: 14px; padding: 10px 14px; } #demobar { top: 140px; left: 8px; }
+  }
+</style>
+</head>
+<body>
+<!-- ===== home: pick a route ===== -->
+<div id="home">
+  <h1>🎄 Light Mapper</h1>
+  <div class="sub">Pick a route to map. Progress is worked out from the GPS log, so you can stop and resume any time.</div>
+  <div class="bar">
+    <label class="switch"><input type="checkbox" id="demo-toggle"> Demo mode (simulated drive)</label>
+    <button class="sec" id="b-import">+ Add route from file</button>
+    <input type="file" id="import-file" accept=".json,.gpx,application/json,application/gpx+xml" hidden>
+    <button class="sec" id="b-drawer-home">📷 Camera</button>
+  </div>
+  <div id="cards"></div>
+  <div class="sub" style="margin-top:18px" id="version"></div>
+</div>
+
+<!-- ===== mapping screen ===== -->
+<div id="mapscr" hidden>
+  <div id="map"></div>
+  <div id="turn"><div class="main"><svg id="arrow" viewBox="0 0 64 64"></svg><div><div class="dist" id="dist">–</div><div class="txt" id="txt">Loading…</div></div></div><div class="then" id="then"></div></div>
+  <div id="topright">
+    <div id="recpill" title="Camera">CAMERA</div>
+    <div style="display:flex;gap:6px"><button class="tbtn" id="b-voice">🔊</button><button class="tbtn" id="b-menu">☰</button><button class="tbtn" id="b-home">✕</button></div>
+  </div>
+  <button id="recenter" hidden>➤ Re-centre</button>
+  <div id="demobar" hidden>Demo <button data-x="1">1×</button><button data-x="4">4×</button><button data-x="12" class="on">12×</button><button data-x="0">⏸</button></div>
+  <div id="bottom">
+    <div id="cardsrow">
+      <div class="card"><div class="big" id="pct">0%</div><div class="small" id="pctsub">covered</div></div>
+      <div class="card"><div class="big" id="houses">0</div><div class="small" id="housesub">houses</div></div>
+      <div class="card"><div class="big" id="left">–</div><div class="small">miles to go</div></div>
+      <div class="card"><div class="big" id="mode">–</div><div class="small" id="modesub">snapped to</div></div>
+    </div>
+    <div id="tl">
+      <div id="tlrow"><span class="lbl"><b>Timeline</b></span>
+        <button data-z="all" class="on">All</button><button data-z="2">2 mi</button><button data-z="0.25">¼ mi</button>
+        <span class="sp"></span>
+        <button id="skip" class="warn hid">Skip to here</button><button id="back" class="act hid">Back to here</button><button id="resume" class="act hid">Resume</button>
+      </div>
+      <div id="tlinfo">drag to preview</div>
+      <canvas id="bar"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- ===== drawer: camera recorder (Theta Recorder UI) ===== -->
+<div id="drawer">
+  <div class="dhead"><b>📷 Camera</b><button class="sec" id="b-drawer-close">Close ✕</button></div>
+  <div id="banner" class="idle">NOT CONNECTED</div>
+  <div class="grid">
+    <div class="tile"><div class="k">Clip</div><div class="v" id="t-clip">–</div></div>
+    <div class="tile"><div class="k">Clip time</div><div class="v" id="t-rec">–</div></div>
+    <div class="tile"><div class="k">Camera battery</div><div class="v" id="t-batt">–</div></div>
+    <div class="tile"><div class="k">Tablet battery</div><div class="v" id="t-tbatt">–</div></div>
+    <div class="tile"><div class="k">Camera storage left</div><div class="v" id="t-store">–</div></div>
+    <div class="tile"><div class="k">GPS</div><div class="v" id="t-gps">–</div></div>
+    <div class="tile"><div class="k">Session</div><div class="v" id="t-sess">–</div></div>
+  </div>
+  <div class="row">
+    <button id="b-connect">Connect camera</button>
+    <button id="b-start" class="go" hidden>Start recording</button>
+    <button id="b-stop" class="stop" hidden>Stop</button>
+    <button id="b-check" class="sec" hidden>Check camera view</button>
+    <button id="b-export" class="sec">Export data</button>
+  </div>
+  <div class="charts">
+    <div class="chart"><div class="ctitle">Battery</div><div class="csum" id="batt-summary">–</div><svg id="chart-batt" viewBox="0 0 600 190" role="img" aria-label="Battery level, camera and tablet, last 2 hours"></svg></div>
+    <div class="chart"><div class="ctitle">Camera storage</div><div class="csum" id="store-summary">–</div><svg id="chart-store" viewBox="0 0 600 190" role="img" aria-label="Camera recording time left, last 2 hours"></svg></div>
+  </div>
+  <div class="chart camview"><div class="ctitle">Camera view <span id="cam-view-label">(tap “Check camera view”, or wait for a stop-sign rollover)</span></div><img id="cam-view" hidden alt="Latest camera thumbnail (both lenses)"></div>
+  <details>
+    <summary>Camera settings (applied on connect / Apply)</summary>
+    <label>Exposure <select id="s-exposure"><option value="manual">Manual</option><option value="auto">Auto</option></select></label>
+    <label>ISO <select id="s-iso"></select></label>
+    <label>Shutter 1/<select id="s-shutter"></select></label>
+    <label>Clip length <select id="s-clip"><option value="3000">50 min (2 fps modes)</option><option value="1500">25 min</option><option value="300">5 min</option></select></label>
+    <label>Resolution <select id="s-size"><option value="2688x2688">2.7K per lens · 2 fps (~11 GB/h)</option><option value="3648x3648">3.6K per lens · 2 fps (~18.5 GB/h)</option><option value="1920x960">2K · 30 fps (~8.7 GB/h)</option><option value="3840x1920">4K · 30 fps (~25 GB/h)</option></select></label>
+    <button id="b-apply" class="sec" disabled>Apply</button>
+    <button id="b-clear" class="sec">Clear stored data</button>
+  </details>
+  <pre id="log"></pre>
+</div>
+
+<div id="mount-check" hidden>
+  <div class="mc-card">
+    <div class="mc-title">Hourly mount check</div>
+    <div class="mc-body">When it's safe: suction cup firm · camera tight, not rotated · lenses facing left/right · tether and cable secure</div>
+    <button id="b-mount-ok">✓ OK</button>
+  </div>
+</div>
+<div id="modal" hidden><div class="box"><h3 id="m-title"></h3><p id="m-body"></p><div class="btns" id="m-btns"></div></div></div>
+
+<script type="module" src="recorder-ui.js"></script>
+<script type="module" src="nav.js"></script>
+</body>
+</html>
