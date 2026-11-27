@@ -1,5 +1,5 @@
 // Light Mapper offline cache. Bump CACHE (and VERSION in nav.js / APP_VERSION in recorder-ui.js) every deploy.
-const CACHE = 'light-mapper-v1', RUNTIME = 'light-mapper-runtime';
+const CACHE = 'light-mapper-v2', RUNTIME = 'light-mapper-runtime';
 const SHELL = ['./', 'index.html', 'nav.js', 'recorder-ui.js', 'ptp.js', 'recorder.js', 'charts.js', 'manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png'];
 self.addEventListener('install', (e) => { e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL.map((u) => new Request(u, { cache: 'reload' })))).then(() => self.skipWaiting())); });
 self.addEventListener('activate', (e) => { e.waitUntil(caches.keys().then((ks) => Promise.all(ks.filter((k) => k !== CACHE && k !== RUNTIME).map((k) => caches.delete(k)))).then(() => self.clients.claim())); });

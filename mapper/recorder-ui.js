@@ -7,7 +7,7 @@ import { renderCharts } from './charts.js';
 
 const $ = (id) => document.getElementById(id);
 const SETTINGS_KEY = 'theta-settings';
-const APP_VERSION = 'mapper-2026-11-27.1';
+const APP_VERSION = 'mapper-2026-11-27.2';
 const qsTelemetry = new URLSearchParams(location.search).get('telemetry');
 if (qsTelemetry !== null) localStorage.setItem('theta-telemetry', qsTelemetry); // ?telemetry= (empty) turns it off
 const TELEMETRY = location.hostname === 'localhost' ? '/api/log' : (localStorage.getItem('theta-telemetry') || null);
@@ -248,7 +248,15 @@ function tone(freq, dur) {
   o.type = 'square'; o.frequency.value = freq; g.gain.value = 0.35;
   o.connect(g).connect(audio.destination); o.start(); o.stop(audio.currentTime + dur);
 }
+// Alarm mute (mapper): silences beeps + vibration only. Not persisted: every app launch starts with alarms ON.
+let alarmsMuted = false;
+function setAlarmsMuted(v) {
+  alarmsMuted = v; log(v ? 'recording alarms muted (banner still shows problems)' : 'recording alarms on');
+  for (const id of ['b-alarm', 'b-alarm2']) { const el = $(id); if (el) { el.textContent = v ? '🔕' : '🔔'; el.title = v ? 'Recording alarms muted: tap to turn on' : 'Mute recording alarms'; el.classList.toggle('muted', v); } }
+}
+for (const id of ['b-alarm', 'b-alarm2']) { const el = $(id); if (el) el.onclick = () => setAlarmsMuted(!alarmsMuted); }
 function alarmSound(level) {
+  if (alarmsMuted) return;
   if (level === 'err') { tone(1000, 0.2); setTimeout(() => tone(700, 0.2), 250); navigator.vibrate?.([300, 100, 300]); }
   else { tone(600, 0.15); }
 }
@@ -391,7 +399,7 @@ $('b-clear').onclick = async () => {
 };
 
 // Handle for remote debugging via Chrome DevTools
-window.app = { showMountCheck, recorder, get camera() { return camera; }, log, exportData, getAll, get status() { return lastStatus; } };
+window.app = { setAlarmsMuted, get alarmsMuted() { return alarmsMuted; }, showMountCheck, recorder, get camera() { return camera; }, log, exportData, getAll, get status() { return lastStatus; } };
 
 navigator.storage?.persist?.().then((ok) => log('persistent storage: ' + (ok ? 'granted' : 'NOT granted (data may be evicted if the tablet runs low on space)')));
 event({ type: 'clock_anchor', wall: Date.now(), timeOrigin: performance.timeOrigin });

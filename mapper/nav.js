@@ -4,7 +4,7 @@
 // time and the resume pointer are saved (IndexedDB 'light-mapper').
 const $ = (id) => document.getElementById(id);
 const MILE = 1609.34, BIN = 20, COVER_M = 20, RON = 25, ROFF = 35;
-const VERSION = 'mapper-2026-11-27.1';
+const VERSION = 'mapper-2026-11-27.2';
 const Q = new URLSearchParams(location.search);
 
 // ---------- storage ----------
