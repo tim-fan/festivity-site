@@ -4,7 +4,7 @@
 // time and the resume pointer are saved (IndexedDB 'light-mapper').
 const $ = (id) => document.getElementById(id);
 const MILE = 1609.34, BIN = 20, COVER_M = 20, RON = 25, ROFF = 35;
-const VERSION = 'mapper-2026-11-28.2';
+const VERSION = 'mapper-2026-11-28.3';
 const Q = new URLSearchParams(location.search);
 
 // ---------- storage ----------
@@ -81,10 +81,12 @@ class RouteModel {
 
 // Strict-sequence snapper: progress only moves forward along the route, within a short window.
 class Snapper {
-  constructor(model, s = 0) { this.m = model; this.s = s; this.mode = 'on'; this.offCnt = 0; this.hist = []; this.motion = null; this.snapped = null; this.heading = 0; this.road = ''; }
+  constructor(model, s = 0) { this.m = model; this.s = s; this.mode = 'on'; this.offCnt = 0; this.hist = []; this.still = 0; this.motion = null; this.snapped = null; this.heading = 0; this.road = ''; }
   fix(lat, lon, gpsHeading, speed) {
     const m = this.m, p = m.xy(lat, lon);
     this.hist.push(p); if (this.hist.length > 4) this.hist.shift();
+    // stopped for 3+ fixes: the old travel direction is stale (e.g. a U-turn at a cul-de-sac start) - forget it so the next match needs no direction
+    if ((speed || 0) < 0.7) { if (++this.still >= 3) { this.motion = null; this.hist = [p]; } } else this.still = 0;
     if (this.hist.length >= 3 && Math.hypot(p[0] - this.hist[0][0], p[1] - this.hist[0][1]) > 8) this.motion = brgXY(this.hist[0], p);
     else if (this.motion == null && speed > 2 && gpsHeading != null) this.motion = gpsHeading;
     const lo = this.s - 25, hi = this.s + (this.mode === 'on' ? Math.max(80, (speed || 0) * 4 + 40) : 80);
@@ -196,7 +198,7 @@ function modal(title, body, buttons) {
 const voice = {
   on: localStorage.getItem('mapper-voice') !== '0', said: new Set(),
   set(v) { this.on = v; localStorage.setItem('mapper-voice', v ? '1' : '0'); $('b-voice').textContent = v ? '🔊' : '🔇'; if (!v) speechSynthesis?.cancel(); },
-  say(text, urgent) { if (!this.on || !window.speechSynthesis) return; if (urgent) speechSynthesis.cancel(); else if (speechSynthesis.speaking) return;
+  say(text, urgent) { if (!this.on || !window.speechSynthesis || document.hidden) return; /* quiet while another app (e.g. Google Maps) is in front */ if (urgent) speechSynthesis.cancel(); else if (speechSynthesis.speaking) return;
     const u = new SpeechSynthesisUtterance(text); u.lang = 'en-US'; u.rate = 1.0; speechSynthesis.speak(u); },
 };
 const speakDist = (m) => m < 300 ? `${Math.max(50, Math.round(m * 3.281 / 50) * 50)} feet` : m < 0.3 * MILE ? 'a quarter mile' : `${(m / MILE).toFixed(1)} miles`;
@@ -468,3 +470,4 @@ if (Q.has('demo')) $('demo-toggle').checked = true;
 renderHome().then(() => { const id = Q.get('route'); const e = catalogue.find((c) => c.id === id); if (e) openRoute(e); });
 window.nav = { get S() { return S; }, scrubTo: (t) => scrubTo(t), jumpTo: (t) => jumpTo(t), setFollow, get map() { return map; }, openRoute, closeRoute, renderHome };
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) navigator.serviceWorker.register('sw.js').catch((e) => console.warn('offline cache', e));
+document.addEventListener('visibilitychange', () => { if (document.hidden) speechSynthesis?.cancel(); });

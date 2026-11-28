@@ -7,7 +7,7 @@ import { renderCharts } from './charts.js';
 
 const $ = (id) => document.getElementById(id);
 const SETTINGS_KEY = 'theta-settings';
-const APP_VERSION = 'mapper-2026-11-28.2';
+const APP_VERSION = 'mapper-2026-11-28.3';
 const qsTelemetry = new URLSearchParams(location.search).get('telemetry');
 if (qsTelemetry !== null) localStorage.setItem('theta-telemetry', qsTelemetry); // ?telemetry= (empty) turns it off
 const TELEMETRY = location.hostname === 'localhost' ? '/api/log' : (localStorage.getItem('theta-telemetry') || null);
@@ -397,7 +397,7 @@ $('b-start').onclick = async () => {
   if (recorder.running) return;
   await recorder.start();
 };
-$('b-stop').onclick = async () => { setWant(false); sessionStart = null; await recorder.stop(); render(); await exportData(); };
+$('b-stop').onclick = async () => { setWant(false); sessionStart = null; await recorder.stop(); render(); log('stopped — GPS and events stay saved on the tablet; use Export only if you want a copy'); };
 $('b-apply').onclick = async () => { if (camera) await recorder.configure(readSettingsUI()); };
 $('b-export').onclick = exportData;
 $('b-clear').onclick = async () => {
