@@ -4,7 +4,7 @@
 // time and the resume pointer are saved (IndexedDB 'light-mapper').
 const $ = (id) => document.getElementById(id);
 const MILE = 1609.34, BIN = 20, COVER_M = 20, RON = 25, ROFF = 35;
-const VERSION = 'mapper-2026-11-28.1';
+const VERSION = 'mapper-2026-11-28.2';
 const Q = new URLSearchParams(location.search);
 
 // ---------- storage ----------
@@ -225,7 +225,7 @@ async function openRoute(entry) {
     s0 = pin.ptrAt > lastFixT ? pin.ptr : snap.s;
   }
   S = { entry, pin, demo, model, bins, snap: new Snapper(model, s0), skippedNote: false, lastSave: 0, scrubT: null, zoomMode: 'all', following: true,
-        view: null, lastDrawn: -1, dirty: true, speedup: 12, sim: null, offAnnounced: false, prevCov: [] };
+        view: null, lastDrawn: -1, dirty: true, speedup: 12, sim: null, offAnnounced: false, prevCov: [], tick: 0, gmaps: false, fixT: 0, spd: 0 };
   $('home').hidden = true; $('mapscr').hidden = false; $('demobar').hidden = !demo; document.body.classList.add('onmap');
   voice.set(voice.on); voice.said.clear();
   await setupMap();
@@ -242,21 +242,30 @@ function closeRoute() {
   speechSynthesis?.cancel(); S = null;
   $('mapscr').hidden = true; $('home').hidden = false; document.body.classList.remove('onmap'); camTab(false); renderHome();
 }
-function onGpsFix(e) { const f = e.detail; if (!S || S.demo) return; step(f.lat, f.lon, f.hdg, f.spd); }
+function onGpsFix(e) { const f = e.detail; if (!S || S.demo) return; S.fixT = f.t || Date.now(); S.spd = f.spd || 0; step(f.lat, f.lon, f.hdg, f.spd); }
+// Where the car is now, not where the last GPS fix said it was: advance along the route by speed x fix age
+// (fix age includes GPS latency), capped at 40 m / 3 s so a stale fix never runs away.
+function predS() {
+  if (!S || S.snap.mode !== 'on' || !S.fixT || !(S.spd > 1)) return S ? S.snap.s : 0;
+  const age = Math.min(3, Math.max(0, (Date.now() - S.fixT) / 1000)); return Math.min(S.model.total, S.snap.s + Math.min(40, S.spd * age));
+}
 function step(lat, lon, hdg, spd) {
   const before = S.snap.mode, p = S.snap.fix(lat, lon, hdg, spd);
   if (S.model.cover(S.bins, p, S.prevCov)) S.dirty = true;
-  if (before !== S.snap.mode) { S.dirty = true; if (S.snap.mode === 'off') voice.say('Off route. Head back to the route.', true); else voice.say('Back on route.', true); }
+  if (before !== S.snap.mode) { S.dirty = true;
+    if (S.snap.mode === 'off') { if (!S.gmaps) voice.say('Off route. Head back to the route.', true); }
+    else { voice.say(S.gmaps ? 'Back on route. You can end Google Maps navigation now.' : 'Back on route.', true); S.gmaps = false; } }
   announce(spd);
   if (!S.demo && S.pin && Date.now() - S.lastSave > 5000) { S.lastSave = Date.now(); S.pin.ptr = S.snap.s; S.pin.ptrAt = Date.now(); dbPut(mdb, 'pins', S.pin); }
   redraw();
 }
 function announce(spd) {
-  if (S.snap.mode !== 'on' || S.scrubT != null) return;
+  if (S.snap.mode !== 'on' || S.scrubT != null || S.gmaps) return;
   const M = S.model.M, s = S.snap.s; const mi = M.findIndex((m) => m.d > s - 3); if (mi < 0) return;
-  const m = M[mi], d = m.d - s, fast = (spd || 0) * (S.demo ? S.speedup : 1);
-  if (d < 45 && !voice.said.has(mi + 'n')) { voice.said.add(mi + 'n'); voice.said.add(mi + 'f'); voice.say(m.text, true); }
-  else if (d > 90 && d < 260 && !voice.said.has(mi + 'f') && fast < 40) { voice.said.add(mi + 'f'); voice.say(`In ${speakDist(d)}, ${m.text}`); }
+  const v = Math.max(3, (spd || 0) * (S.demo ? S.speedup : 1)), d = M[mi].d - predS(), m = M[mi];
+  // announce by time to the turn (allowing ~1.5 s for GPS lag + speech), not a fixed distance
+  if ((d < Math.max(45, v * 5) || d / v < 5) && !voice.said.has(mi + 'n')) { voice.said.add(mi + 'n'); voice.said.add(mi + 'f'); voice.say(m.text, true); }
+  else if (d > Math.max(90, v * 9) && d < Math.max(260, v * 18) && !voice.said.has(mi + 'f') && v < 40) { voice.said.add(mi + 'f'); voice.say(`In ${speakDist(d)}, ${m.text}`); }
 }
 
 async function setupMap() {
@@ -296,7 +305,9 @@ function setFollow(on) { if (!S) return; S.following = on; $('recenter').hidden 
   if (on) { const q = S.scrubT != null ? S.model.ll(...S.model.pt(S.scrubT)) : S.model.ll(...S.snap.snapped); S.view = { lng: q[1], lat: q[0], brg: S.scrubT != null ? S.model.brg(S.scrubT) : S.snap.heading }; } }
 function camera() {
   if (S && S.following && S.snap.snapped && mapReady) {
-    const m = S.model, q = S.scrubT != null ? m.ll(...m.pt(S.scrubT)) : m.ll(...S.snap.snapped), hd = S.scrubT != null ? m.brg(S.scrubT) : S.snap.heading, a = .15, v = S.view;
+    const m = S.model, ps = predS(), live = S.scrubT == null && S.snap.mode === 'on' && ps > S.snap.s;
+    if (live) { const c = m.ll(...m.pt(ps)); car.setLngLat([c[1], c[0]]); car.setRotation(m.brg(ps)); if (++S.tick % 15 === 0) banner(); }
+    const q = S.scrubT != null ? m.ll(...m.pt(S.scrubT)) : (live ? m.ll(...m.pt(ps)) : m.ll(...S.snap.snapped)), hd = S.scrubT != null ? m.brg(S.scrubT) : (live ? m.brg(ps) : S.snap.heading), a = .15, v = S.view;
     v.lng += (q[1] - v.lng) * a; v.lat += (q[0] - v.lat) * a; const db = ((hd - v.brg + 540) % 360) - 180; v.brg = (v.brg + db * .08 + 360) % 360;
     const topY = $('turn').getBoundingClientRect().bottom + 8, botY = $('bottom').getBoundingClientRect().top - 8, avail = Math.max(60, botY - topY);
     map.jumpTo({ center: [v.lng, v.lat], bearing: v.brg, pitch: 58, zoom: innerHeight < 520 ? 17.6 : 18.3, padding: { top: topY + avail * .45, bottom: innerHeight - botY, left: 0, right: 0 } });
@@ -335,10 +346,11 @@ function banner() {
   if (S.scrubT != null) { T.className = 'preview'; setArrow('eye'); const dd = S.scrubT - s; $('dist').textContent = (dd >= 0 ? '+' : '−') + fmt(Math.abs(dd));
     $('txt').textContent = 'Preview: ' + (m.streetAt(S.scrubT) || 'route'); $('then').textContent = dd >= 0 ? 'Skip to here jumps ahead (anything undriven shows red)' : 'Back to here lets you redo from this point'; return; }
   if (S.snap.mode === 'off') { T.className = 'off'; setArrow('back'); const t = m.pt(s), d = S.snap.snapped ? Math.hypot(S.snap.snapped[0] - t[0], S.snap.snapped[1] - t[1]) : 0;
-    $('dist').textContent = fmt(d); $('txt').textContent = `Off route (on ${S.snap.road}). Head back to the route`; $('then').textContent = 'Can’t get back? Use the timeline to skip ahead.'; return; }
+    $('dist').textContent = fmt(d); $('txt').textContent = S.gmaps ? 'Following Google Maps back to the route' : `Off route (on ${S.snap.road}). Head back to the route`;
+    $('then').textContent = S.gmaps ? 'This app stays quiet until you’re back. End Google Maps navigation when you arrive.' : 'Can’t get back? Use the timeline to skip ahead.'; return; }
   const M = m.M; let mi = M.findIndex((x) => x.d > s - 5);
   if (mi < 0) { setArrow('flag'); $('dist').textContent = fmt(Math.max(0, m.total - s)); $('txt').textContent = 'End of route'; $('then').textContent = ''; return; }
-  const x = M[mi], n = M[mi + 1]; setArrow(x.type); $('dist').textContent = fmt(Math.max(0, x.d - s)); $('txt').textContent = x.text; $('then').textContent = n ? `Then: ${n.text}` : '';
+  const x = M[mi], n = M[mi + 1]; setArrow(x.type); $('dist').textContent = fmt(Math.max(0, x.d - predS())); $('txt').textContent = x.text; $('then').textContent = n ? `Then: ${n.text}` : '';
 }
 
 // ---------- timeline ----------
@@ -403,7 +415,7 @@ document.querySelectorAll('#demobar [data-x]').forEach((b) => b.onclick = () => 
 // ---------- menu, drawer, import ----------
 $('b-home').onclick = closeRoute;
 // hand off to Google Maps: drive to the next point on the route (where progress is waiting), then come back to this app
-$('b-gmaps').onclick = () => { if (!S) return; const q = S.model.ll(...S.model.pt(S.snap.s + 5));
+$('b-gmaps').onclick = () => { if (!S) return; S.gmaps = true; banner(); const q = S.model.ll(...S.model.pt(S.snap.s + 5));
   window.open(`https://www.google.com/maps/dir/?api=1&destination=${q[0].toFixed(6)},${q[1].toFixed(6)}&travelmode=driving&dir_action=navigate`, '_blank'); };
 $('b-voice').onclick = () => { voice.set(!voice.on); if (voice.on) voice.say('Voice on.'); };
 $('b-menu').onclick = async () => {
