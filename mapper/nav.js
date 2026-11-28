@@ -4,7 +4,7 @@
 // time and the resume pointer are saved (IndexedDB 'light-mapper').
 const $ = (id) => document.getElementById(id);
 const MILE = 1609.34, BIN = 20, COVER_M = 20, RON = 25, ROFF = 35;
-const VERSION = 'mapper-2026-11-27.6';
+const VERSION = 'mapper-2026-11-28.1';
 const Q = new URLSearchParams(location.search);
 
 // ---------- storage ----------
@@ -140,11 +140,49 @@ async function renderHome() {
     if (pin) { const c = await routeCoverage(pin); pct = c.pct; svg = miniMap(pin.bundle, c.bins); pctTxt = `${Math.round(pct * 100)}% covered · started ${new Date(pin.runStart).toLocaleDateString()}`; }
     else { try { const b = await fetchBundle(entry); svg = miniMap(b, null); } catch { /* offline */ } }
     card.innerHTML = `${svg}<div class="body"><div class="name">${entry.name}${entry.local ? '<span class="tag">local</span>' : ''}</div><div class="meta">${meta}</div>
-      <div class="prog"><div style="width:${(pct * 100).toFixed(1)}%"></div></div><div class="pct">${pctTxt}</div>${pin && pin.version !== entry.version ? '<div class="newer">Newer route available (reset progress to use it)</div>' : ''}</div>`;
+      <div class="prog"><div style="width:${(pct * 100).toFixed(1)}%"></div></div><div class="pct">${pctTxt}</div>${localStorage.getItem(offlineKey(entry.id)) ? '<div class="off">✓ Map saved for offline</div>' : ''}${pin && pin.version !== entry.version ? '<div class="newer">Newer route available (reset progress to use it)</div>' : ''}</div>`;
     card.onclick = () => openRoute(entry);
     el.appendChild(card);
   }
   if (!catalogue.length) el.innerHTML = '<div class="sub">No routes yet. Add one from a file.</div>';
+  for (const entry of catalogue) if (!localStorage.getItem(offlineKey(entry.id))) fetchBundle(entry).then((b) => cacheRouteOffline(b, entry.id, false)).catch(() => {});
+}
+
+// ---------- offline map: style (with a plain fallback) + all tiles/fonts/icons around a route ----------
+const STYLE_URL = 'https://tiles.openfreemap.org/styles/liberty', RUNTIME_CACHE = 'light-mapper-runtime';
+const FALLBACK_STYLE = { version: 8, sources: {}, layers: [{ id: 'bg', type: 'background', paint: { 'background-color': '#ece8e0' } }] };
+async function loadStyle() {
+  try { const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), 8000); const r = await fetch(STYLE_URL, { signal: ctl.signal }); clearTimeout(t); if (!r.ok) throw new Error(r.status); return await r.json(); }
+  catch (e) { console.warn('map style unavailable, using plain background', e); return FALLBACK_STYLE; }
+}
+const offlineKey = (id) => 'mapper-offline-' + id;
+const offlineBusy = new Set();
+async function cacheRouteOffline(bundle, id, show) {
+  if (!navigator.onLine || offlineBusy.has(id) || !('caches' in window)) return; offlineBusy.add(id);
+  const el = $('offline'), say = (t) => { if (show) { el.hidden = !t; el.textContent = t; } };
+  try {
+    const st = await (await fetch(STYLE_URL)).json(), urls = new Set([STYLE_URL]);
+    if (typeof st.sprite === 'string') for (const sfx of ['.json', '.png', '@2x.json', '@2x.png']) urls.add(st.sprite + sfx);
+    const fonts = new Set(); for (const l of st.layers) { const f = l.layout?.['text-font']; if (Array.isArray(f) && f.every((x) => typeof x === 'string')) fonts.add(f.join(',')); }
+    for (const f of fonts) for (const rg of ['0-255', '256-511', '8192-8447']) urls.add(st.glyphs.replace('{fontstack}', f).replace('{range}', rg));
+    // bounding box of the route + 2 km for detours
+    let la0 = 90, la1 = -90, lo0 = 180, lo1 = -180; for (const p of bundle.nav.route) { la0 = Math.min(la0, p[0]); la1 = Math.max(la1, p[0]); lo0 = Math.min(lo0, p[1]); lo1 = Math.max(lo1, p[1]); }
+    const padLa = 2000 / 110540, padLo = 2000 / (111320 * Math.cos(la0 * Math.PI / 180)); la0 -= padLa; la1 += padLa; lo0 -= padLo; lo1 += padLo;
+    const tx = (lon, z) => Math.floor((lon + 180) / 360 * 2 ** z), ty = (lat, z) => Math.floor((1 - Math.log(Math.tan(lat * Math.PI / 180) + 1 / Math.cos(lat * Math.PI / 180)) / Math.PI) / 2 * 2 ** z);
+    for (const src of Object.values(st.sources)) {
+      if (src.type !== 'vector') continue; let tj = src; if (src.url) { urls.add(src.url); tj = await (await fetch(src.url)).json(); }
+      const tmpl = tj.tiles[0], maxz = Math.min(14, tj.maxzoom ?? 14);
+      for (let z = 8; z <= maxz; z++) for (let x = tx(lo0, z); x <= tx(lo1, z); x++) for (let y = ty(la1, z); y <= ty(la0, z); y++) urls.add(tmpl.replace('{z}', z).replace('{x}', x).replace('{y}', y));
+    }
+    const cache = await caches.open(RUNTIME_CACHE), list = [...urls]; let done = 0, failed = 0;
+    for (let i = 0; i < list.length; i += 6) {
+      await Promise.all(list.slice(i, i + 6).map(async (u) => { try { if (!(await cache.match(u))) { const r = await fetch(u); if (r.ok) await cache.put(u, r); else failed++; } } catch { failed++; } done++; }));
+      say(`Offline map: ${done}/${list.length}`);
+    }
+    if (failed < list.length * 0.05) { localStorage.setItem(offlineKey(id), String(Date.now())); say('✓ Offline map ready'); setTimeout(() => say(''), 4000); }
+    else say(`Offline map incomplete (${failed} failed)`);
+  } catch (e) { say('Offline map: no connection'); setTimeout(() => say(''), 4000); }
+  finally { offlineBusy.delete(id); }
 }
 
 // ---------- modal ----------
@@ -190,7 +228,8 @@ async function openRoute(entry) {
         view: null, lastDrawn: -1, dirty: true, speedup: 12, sim: null, offAnnounced: false, prevCov: [] };
   $('home').hidden = true; $('mapscr').hidden = false; $('demobar').hidden = !demo; document.body.classList.add('onmap');
   voice.set(voice.on); voice.said.clear();
-  setupMap();
+  await setupMap();
+  cacheRouteOffline(bundle, entry.id, true);
   if (demo) startSim(); else window.addEventListener('gpsfix', onGpsFix);
   const p = model.ll(...model.pt(s0)); S.snap.snapped = model.pt(s0); S.snap.heading = model.brg(s0);
   S.view = { lng: p[1], lat: p[0], brg: S.snap.heading };
@@ -220,9 +259,10 @@ function announce(spd) {
   else if (d > 90 && d < 260 && !voice.said.has(mi + 'f') && fast < 40) { voice.said.add(mi + 'f'); voice.say(`In ${speakDist(d)}, ${m.text}`); }
 }
 
-function setupMap() {
+async function setupMap() {
   if (map) { map.resize(); return; }
-  map = new maplibregl.Map({ container: 'map', style: 'https://tiles.openfreemap.org/styles/liberty', center: [-117.16, 32.75], zoom: 17, pitch: 58, attributionControl: { compact: true } });
+  const style = await loadStyle();
+  map = new maplibregl.Map({ container: 'map', style, center: [-117.16, 32.75], zoom: 17, pitch: 58, attributionControl: { compact: true } });
   const carEl = document.createElement('div'); carEl.className = 'car';
   carEl.innerHTML = '<svg viewBox="0 0 34 34" width="48" height="48"><circle cx="17" cy="17" r="15" fill="#1971c2" stroke="#fff" stroke-width="3"/><path d="M17 7l7 16-7-4-7 4z" fill="#fff"/></svg>';
   car = new maplibregl.Marker({ element: carEl, rotationAlignment: 'map', pitchAlignment: 'map' }).setLngLat([-117.16, 32.75]).addTo(map);
@@ -415,4 +455,4 @@ $('version').textContent = `Light Mapper ${VERSION}. Camera controls are in the 
 if (Q.has('demo')) $('demo-toggle').checked = true;
 renderHome().then(() => { const id = Q.get('route'); const e = catalogue.find((c) => c.id === id); if (e) openRoute(e); });
 window.nav = { get S() { return S; }, scrubTo: (t) => scrubTo(t), jumpTo: (t) => jumpTo(t), setFollow, get map() { return map; }, openRoute, closeRoute, renderHome };
-if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch((e) => console.warn('offline cache', e));
+if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) navigator.serviceWorker.register('sw.js').catch((e) => console.warn('offline cache', e));

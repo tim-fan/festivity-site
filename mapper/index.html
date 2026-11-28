@@ -7,8 +7,8 @@
 <link rel="icon" href="icons/icon-192.png">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#111111">
-<link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet">
-<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<link href="vendor/maplibre-gl.css" rel="stylesheet">
+<script src="vendor/maplibre-gl.js"></script>
 <style>
   :root { color-scheme: dark; }
   * { box-sizing: border-box; }
@@ -50,6 +50,8 @@
   #recpill { font: 700 14px system-ui; padding: 8px 12px; border-radius: 10px; background: #444; color: #fff; box-shadow: 0 2px 10px #0008; cursor: pointer; max-width: 260px; text-align: right; }
   #camstats { background: rgba(20,20,24,.9); color: #fff; border-radius: 10px; padding: 6px 10px; font: 600 14px system-ui; box-shadow: 0 2px 10px #0008; display: grid; grid-template-columns: auto auto; gap: 2px 10px; }
   #camstats .k { color: #aaa; font-weight: 400; } #camstats .bad { color: #ff6b6b; } #camstats:empty { display: none; }
+  #offline { background: rgba(20,20,24,.9); color: #ddd; border-radius: 10px; padding: 5px 10px; font-size: 12px; box-shadow: 0 2px 10px #0008; } #offline[hidden] { display: none; }
+  .rcard .off { color: #8ce99a; font-size: 12px; margin-top: 4px; }
   #recpill.rec { background: #0a6b2a; } #recpill.err { background: #b00020; animation: blink 1s infinite; } #recpill.warn { background: #8a5a00; }
   .tbtn { background: rgba(20,20,24,.9); box-shadow: 0 2px 10px #0008; }
   button.muted { background: #8a5a00 !important; }
@@ -148,6 +150,7 @@
     <div id="recpill" title="Camera">CAMERA</div>
     <div style="display:flex;gap:6px"><button class="tbtn" id="b-cam" title="Camera controls">📷</button><button class="tbtn" id="b-voice" title="Voice directions">🔊</button><button class="tbtn" id="b-alarm" title="Mute recording alarms">🔔</button><button class="tbtn" id="b-menu">☰</button><button class="tbtn" id="b-home">✕</button></div>
     <div id="camstats"></div>
+    <div id="offline" hidden></div>
   </div>
   <button id="recenter" hidden>➤ Re-centre</button>
   <div id="demobar" hidden>Demo <button data-x="1">1×</button><button data-x="4">4×</button><button data-x="12" class="on">12×</button><button data-x="0">⏸</button></div>
