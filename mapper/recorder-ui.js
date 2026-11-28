@@ -7,7 +7,7 @@ import { renderCharts } from './charts.js';
 
 const $ = (id) => document.getElementById(id);
 const SETTINGS_KEY = 'theta-settings';
-const APP_VERSION = 'mapper-2026-11-27.5';
+const APP_VERSION = 'mapper-2026-11-27.6';
 const qsTelemetry = new URLSearchParams(location.search).get('telemetry');
 if (qsTelemetry !== null) localStorage.setItem('theta-telemetry', qsTelemetry); // ?telemetry= (empty) turns it off
 const TELEMETRY = location.hostname === 'localhost' ? '/api/log' : (localStorage.getItem('theta-telemetry') || null);
@@ -291,6 +291,14 @@ function render() {
   else { b.className = 'warn'; b.textContent = 'CAMERA NOT CONNECTED'; }
   const pill = $('recpill'); if (pill) { pill.className = b.className; pill.textContent = b.textContent; }
   const tc = $('tab-cam'); if (tc) { tc.dataset.st = b.className; tc.title = b.textContent; }
+  const cs = $('camstats');
+  if (cs) { // compact camera stats on the map (mapper): no need to open the camera panel while driving
+    const storeTxt = $('t-store').textContent, storeH = /^(\d+):(\d\d)/.exec(storeTxt), lowStore = storeH && (+storeH[1] * 60 + +storeH[2]) < 30;
+    const camB = camera && lastStatus.battery != null ? lastStatus.battery : null, tabB = tabletBattery ? Math.round(tabletBattery.level * 100) : null;
+    const row = (k, v, bad) => `<span class="k">${k}</span><span class="${bad ? 'bad' : ''}">${v}</span>`;
+    cs.innerHTML = row('Clip', $('t-rec').textContent) + row('Camera 🔋', camB != null ? camB + '%' : '–', camB != null && camB < 20) +
+      row('Tablet 🔋', tabB != null ? `${tabB}%${tabletBattery.charging ? ' ⚡' : ''}` : '–', tabB != null && tabB < 20 && !tabletBattery.charging) + row('Storage', storeTxt, lowStore);
+  }
   $('t-clip').textContent = recorder.clip || '–';
   $('t-rec').textContent = lastStatus.recSec != null ? fmtDur(lastStatus.recSec) : '–';
   $('t-batt').textContent = camera && lastStatus.battery != null ? lastStatus.battery + '%' : '–';

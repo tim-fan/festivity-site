@@ -4,7 +4,7 @@
 // time and the resume pointer are saved (IndexedDB 'light-mapper').
 const $ = (id) => document.getElementById(id);
 const MILE = 1609.34, BIN = 20, COVER_M = 20, RON = 25, ROFF = 35;
-const VERSION = 'mapper-2026-11-27.5';
+const VERSION = 'mapper-2026-11-27.6';
 const Q = new URLSearchParams(location.search);
 
 // ---------- storage ----------
@@ -377,9 +377,9 @@ $('b-menu').onclick = async () => {
   }
 };
 const drawer = $('drawer');
-function camTab(open) { drawer.classList.toggle('open', open); $('tab-cam').classList.toggle('on', open); $('tab-map').classList.toggle('on', !open); }
+function camTab(open) { drawer.classList.toggle('open', open); document.body.classList.toggle('camopen', open); $('tab-cam').classList.toggle('on', open); $('tab-map').classList.toggle('on', !open); setTimeout(() => { map?.resize(); drawBar(); }, 260); }
 $('tab-cam').onclick = () => camTab(true); $('tab-map').onclick = () => camTab(false);
-$('b-drawer-home').onclick = () => camTab(true); $('recpill').onclick = () => camTab(true); $('b-drawer-close').onclick = () => camTab(false);
+$('b-drawer-home').onclick = () => camTab(true); $('b-cam').onclick = () => camTab(!drawer.classList.contains('open')); $('recpill').onclick = () => camTab(true); $('b-drawer-close').onclick = () => camTab(false);
 $('b-import').onclick = () => $('import-file').click();
 $('import-file').onchange = async (e) => {
   const file = e.target.files[0]; if (!file) return; e.target.value = '';

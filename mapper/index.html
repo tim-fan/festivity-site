@@ -48,6 +48,8 @@
   #turn.preview { background: #37474f; } #turn.preview .then { background: #263238; }
   #topright { position: absolute; z-index: 6; top: 12px; right: 12px; display: flex; flex-direction: column; gap: 8px; align-items: flex-end; }
   #recpill { font: 700 14px system-ui; padding: 8px 12px; border-radius: 10px; background: #444; color: #fff; box-shadow: 0 2px 10px #0008; cursor: pointer; max-width: 260px; text-align: right; }
+  #camstats { background: rgba(20,20,24,.9); color: #fff; border-radius: 10px; padding: 6px 10px; font: 600 14px system-ui; box-shadow: 0 2px 10px #0008; display: grid; grid-template-columns: auto auto; gap: 2px 10px; }
+  #camstats .k { color: #aaa; font-weight: 400; } #camstats .bad { color: #ff6b6b; } #camstats:empty { display: none; }
   #recpill.rec { background: #0a6b2a; } #recpill.err { background: #b00020; animation: blink 1s infinite; } #recpill.warn { background: #8a5a00; }
   .tbtn { background: rgba(20,20,24,.9); box-shadow: 0 2px 10px #0008; }
   button.muted { background: #8a5a00 !important; }
@@ -71,6 +73,7 @@
   /* ---------- drawer (recorder) ---------- */
   #drawer { position: absolute; z-index: 20; top: 0; right: 0; bottom: 0; width: 430px; max-width: 100%; background: #111; box-shadow: -6px 0 24px #000a; transform: translateX(105%); transition: transform .2s; overflow-y: auto; }
   #drawer.open { transform: none; }
+  @media (min-width: 1000px) { body.camopen #mapscr { right: 430px; } body.camopen #drawer { box-shadow: none; border-left: 1px solid #333; } }
   #drawer .dhead { position: sticky; top: 0; z-index: 2; display: flex; align-items: center; gap: 8px; padding: 8px; background: #111; border-bottom: 1px solid #2a2a2a; }
   #drawer .dhead b { flex: 1; font-size: 16px; }
   #banner { padding: 12px; font-size: 22px; font-weight: 700; text-align: center; background: #444; }
@@ -103,7 +106,7 @@
   /* small screens: camera controls become a full-screen tab instead of a side drawer */
   @media (max-width: 760px), (max-height: 520px) {
     body.onmap #tabbar { display: flex; position: fixed; z-index: 25; top: 8px; left: 8px; box-shadow: 0 2px 10px #0008; border-radius: 10px; }
-    #recpill { display: none; } #topright > div { gap: 4px !important; } #topright .tbtn { padding: 8px 10px; }
+    #recpill { display: none; } #b-cam { display: none; } #topright > div { gap: 4px !important; } #topright .tbtn { padding: 8px 10px; } #camstats { font-size: 12px; padding: 4px 8px; }
     #drawer { width: 100%; transition: none; padding-top: 52px; } #drawer .dhead #b-drawer-close { display: none; }
     #topright { top: 8px; right: 8px; }
     #turn { top: 56px; left: 8px; }
@@ -143,7 +146,8 @@
   <div id="turn"><div class="main"><svg id="arrow" viewBox="0 0 64 64"></svg><div><div class="dist" id="dist">–</div><div class="txt" id="txt">Loading…</div></div></div><div class="then" id="then"></div><button id="b-gmaps" hidden>↗ Navigate back with Google Maps</button></div>
   <div id="topright">
     <div id="recpill" title="Camera">CAMERA</div>
-    <div style="display:flex;gap:6px"><button class="tbtn" id="b-voice" title="Voice directions">🔊</button><button class="tbtn" id="b-alarm" title="Mute recording alarms">🔔</button><button class="tbtn" id="b-menu">☰</button><button class="tbtn" id="b-home">✕</button></div>
+    <div style="display:flex;gap:6px"><button class="tbtn" id="b-cam" title="Camera controls">📷</button><button class="tbtn" id="b-voice" title="Voice directions">🔊</button><button class="tbtn" id="b-alarm" title="Mute recording alarms">🔔</button><button class="tbtn" id="b-menu">☰</button><button class="tbtn" id="b-home">✕</button></div>
+    <div id="camstats"></div>
   </div>
   <button id="recenter" hidden>➤ Re-centre</button>
   <div id="demobar" hidden>Demo <button data-x="1">1×</button><button data-x="4">4×</button><button data-x="12" class="on">12×</button><button data-x="0">⏸</button></div>
