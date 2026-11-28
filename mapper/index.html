@@ -44,6 +44,7 @@
   #turn .txt { font-size: 18px; margin-top: 4px; line-height: 1.2; }
   #turn .then { background: #14451a; padding: 6px 16px; font-size: 14px; color: #cfe8d0; }
   #turn.off { background: #b71c1c; } #turn.off .then { background: #7f1414; color: #ffd7d7; }
+  #b-gmaps { display: block; margin: 0 16px 12px; background: #fff; color: #b71c1c; font-size: 16px; } #b-gmaps[hidden] { display: none; }
   #turn.preview { background: #37474f; } #turn.preview .then { background: #263238; }
   #topright { position: absolute; z-index: 6; top: 12px; right: 12px; display: flex; flex-direction: column; gap: 8px; align-items: flex-end; }
   #recpill { font: 700 14px system-ui; padding: 8px 12px; border-radius: 10px; background: #444; color: #fff; box-shadow: 0 2px 10px #0008; cursor: pointer; max-width: 260px; text-align: right; }
@@ -139,7 +140,7 @@
 <!-- ===== mapping screen ===== -->
 <div id="mapscr" hidden>
   <div id="map"></div>
-  <div id="turn"><div class="main"><svg id="arrow" viewBox="0 0 64 64"></svg><div><div class="dist" id="dist">–</div><div class="txt" id="txt">Loading…</div></div></div><div class="then" id="then"></div></div>
+  <div id="turn"><div class="main"><svg id="arrow" viewBox="0 0 64 64"></svg><div><div class="dist" id="dist">–</div><div class="txt" id="txt">Loading…</div></div></div><div class="then" id="then"></div><button id="b-gmaps" hidden>↗ Navigate back with Google Maps</button></div>
   <div id="topright">
     <div id="recpill" title="Camera">CAMERA</div>
     <div style="display:flex;gap:6px"><button class="tbtn" id="b-voice" title="Voice directions">🔊</button><button class="tbtn" id="b-alarm" title="Mute recording alarms">🔔</button><button class="tbtn" id="b-menu">☰</button><button class="tbtn" id="b-home">✕</button></div>

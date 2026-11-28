@@ -4,7 +4,7 @@
 // time and the resume pointer are saved (IndexedDB 'light-mapper').
 const $ = (id) => document.getElementById(id);
 const MILE = 1609.34, BIN = 20, COVER_M = 20, RON = 25, ROFF = 35;
-const VERSION = 'mapper-2026-11-27.4';
+const VERSION = 'mapper-2026-11-27.5';
 const Q = new URLSearchParams(location.search);
 
 // ---------- storage ----------
@@ -290,7 +290,7 @@ function setArrow(t) { const p = { straight: 'M32 56V14M18 28l14-14 14 14', righ
   uturn: 'M22 56V26a10 10 0 0 1 20 0v20M32 38l10 10 10-10', back: 'M32 10a22 22 0 1 0 0.1 0M32 20v14l9 6', eye: 'M6 32q26-26 52 0q-26 26-52 0zM32 25a7 7 0 1 0 .1 0', flag: 'M18 58V8M18 10h28l-6 9 6 9H18' }[t] || '';
   $('arrow').innerHTML = `<path d="${p}" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>`; }
 function banner() {
-  const T = $('turn'), m = S.model, s = S.snap.s; T.className = '';
+  const T = $('turn'), m = S.model, s = S.snap.s; T.className = ''; $('b-gmaps').hidden = !(S.snap.mode === 'off' && S.scrubT == null);
   $('mode').textContent = S.snap.mode === 'on' ? 'route' : 'off route'; $('modesub').textContent = S.snap.mode === 'on' ? 'snapped to planned route' : `snapped to ${S.snap.road}`;
   if (S.scrubT != null) { T.className = 'preview'; setArrow('eye'); const dd = S.scrubT - s; $('dist').textContent = (dd >= 0 ? '+' : '−') + fmt(Math.abs(dd));
     $('txt').textContent = 'Preview: ' + (m.streetAt(S.scrubT) || 'route'); $('then').textContent = dd >= 0 ? 'Skip to here jumps ahead (anything undriven shows red)' : 'Back to here lets you redo from this point'; return; }
@@ -362,6 +362,9 @@ document.querySelectorAll('#demobar [data-x]').forEach((b) => b.onclick = () => 
 
 // ---------- menu, drawer, import ----------
 $('b-home').onclick = closeRoute;
+// hand off to Google Maps: drive to the next point on the route (where progress is waiting), then come back to this app
+$('b-gmaps').onclick = () => { if (!S) return; const q = S.model.ll(...S.model.pt(S.snap.s + 5));
+  window.open(`https://www.google.com/maps/dir/?api=1&destination=${q[0].toFixed(6)},${q[1].toFixed(6)}&travelmode=driving&dir_action=navigate`, '_blank'); };
 $('b-voice').onclick = () => { voice.set(!voice.on); if (voice.on) voice.say('Voice on.'); };
 $('b-menu').onclick = async () => {
   if (!S) return; const newer = catalogue.find((c) => c.id === S.entry.id);
