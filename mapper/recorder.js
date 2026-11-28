@@ -8,7 +8,7 @@ export const DEFAULT_SETTINGS = {
   imageSize: '2688x2688', // 2.7K per lens at 2 fps (two files per clip); '1920x960' 2K30, '3840x1920' 4K30, '3648x3648' 3.6K 2 fps
   maxClipSeconds: 3000, // 3000 only in the 2 fps modes; 30 fps modes are capped to 1500 automatically
   exposure: 'manual', // 'manual' | 'auto'
-  iso: 2000,
+  iso: 3200, // 2026-11-28: brighter for presentation; Tim accepted the extra bulb clipping (5-18% fully white at 3200 vs ~0% at 2000)
   shutterDen: 125, // 1/125 s: sharp at 15-25 mph; lights measured at ISO 1600 1/160 were well exposed, this is ~2/3 stop brighter
   fNumber: 210, // f/2.1 always: widest aperture, most light; no depth-of-field cost at house distances
   beepVolume: 0, // camera beeps on clip start/stop; silence them

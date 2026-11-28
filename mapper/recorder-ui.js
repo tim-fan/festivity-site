@@ -7,7 +7,7 @@ import { renderCharts } from './charts.js';
 
 const $ = (id) => document.getElementById(id);
 const SETTINGS_KEY = 'theta-settings';
-const APP_VERSION = 'mapper-2026-11-28.3';
+const APP_VERSION = 'mapper-2026-11-28.4';
 const qsTelemetry = new URLSearchParams(location.search).get('telemetry');
 if (qsTelemetry !== null) localStorage.setItem('theta-telemetry', qsTelemetry); // ?telemetry= (empty) turns it off
 const TELEMETRY = location.hostname === 'localhost' ? '/api/log' : (localStorage.getItem('theta-telemetry') || null);
@@ -57,7 +57,7 @@ function event(e) {
 }
 
 // ---------- settings ----------
-const SETTINGS_VERSION = 2; // bump to make every device adopt new defaults once
+const SETTINGS_VERSION = 3; // bump to make every device adopt new defaults once
 function loadSettings() {
   if (localStorage.getItem('theta-settings-version') !== String(SETTINGS_VERSION)) {
     localStorage.removeItem(SETTINGS_KEY); localStorage.setItem('theta-settings-version', String(SETTINGS_VERSION));
